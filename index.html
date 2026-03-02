@@ -1,0 +1,2186 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gutachter Assistant | Prototype</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1a5f9c;
+            --primary-dark: #0e3b63;
+            --primary-light: #e8f0fe;
+            --primary-soft: #d4e3fd;
+            --secondary: #2c3e50;
+            --success: #27ae60;
+            --warning: #e67e22;
+            --danger: #c0392b;
+            --info: #3498db;
+            
+            --gray-50: #fafbfc;
+            --gray-100: #f4f6f9;
+            --gray-200: #e9ecf0;
+            --gray-300: #dde1e7;
+            --gray-400: #bdc3cd;
+            --gray-500: #95a0b1;
+            --gray-600: #6c7a8f;
+            --gray-700: #4a5568;
+            --gray-800: #2d3748;
+            --gray-900: #1a202c;
+            
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+            --shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.15);
+            
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: linear-gradient(135deg, #f5f7fa 0%, #eef2f6 100%);
+            color: var(--gray-800);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--gray-900);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: var(--gray-800);
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 0.75rem 2rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .brand-icon {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .brand-text {
+            font-size: 1.35rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .prototype-badge {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+        }
+
+        .disclaimer-banner {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+            padding: 0.6rem;
+            text-align: center;
+            font-size: 0.875rem;
+            border-bottom: 1px solid #fcd34d;
+            font-weight: 500;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--gray-600);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 0;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .language-toggle {
+            display: flex;
+            gap: 0.25rem;
+            border-left: 1px solid var(--gray-200);
+            padding-left: 1rem;
+            background: var(--gray-100);
+            border-radius: 30px;
+            padding: 0.25rem;
+        }
+
+        .lang-btn {
+            background: transparent;
+            border: none;
+            padding: 0.35rem 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--gray-600);
+            transition: all 0.2s;
+        }
+
+        .lang-btn.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Main Layout */
+        .app-container {
+            max-width: 1600px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Cards & Containers */
+        .stat-card {
+            background: white;
+            padding: 1.75rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1.2;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: var(--gray-600);
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .case-table {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            border: 1px solid var(--gray-200);
+        }
+
+        .case-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .case-table th {
+            background: var(--gray-50);
+            padding: 1.25rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--gray-600);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .case-table td {
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        .case-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .case-table tr:hover td {
+            background: var(--gray-50);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.35rem 1rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        .status-badge.warning {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .status-badge.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.primary {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+        }
+
+        .status-badge.info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        /* Workspace */
+        .workspace-header {
+            background: white;
+            padding: 1.75rem 2rem;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .workspace-tabs {
+            background: white;
+            padding: 0 2rem;
+            display: flex;
+            gap: 2.5rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .tab {
+            padding: 1.25rem 0;
+            color: var(--gray-600);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: var(--primary);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .workspace-content {
+            background: white;
+            padding: 2rem;
+            min-height: 600px;
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius-lg);
+            padding: 3rem;
+            text-align: center;
+            background: var(--gray-50);
+            margin-bottom: 2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--success);
+            background: #d1fae5;
+        }
+
+        .upload-progress {
+            margin-top: 1.5rem;
+            width: 100%;
+            height: 6px;
+            background: var(--gray-200);
+            border-radius: 30px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--info));
+            width: 0%;
+            transition: width 0.3s;
+            border-radius: 30px;
+        }
+
+        /* Document Items */
+        .document-item {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            padding: 1.25rem;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            margin-bottom: 0.75rem;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .document-item:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .document-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--primary-light);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .confidence {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            background: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .confidence.high {
+            border: 2px solid var(--success);
+            color: var(--success);
+        }
+
+        .confidence.medium {
+            border: 2px solid var(--warning);
+            color: #b45309;
+        }
+
+        .confidence.low {
+            border: 2px solid var(--danger);
+            color: var(--danger);
+        }
+
+        .document-preview {
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            border-left: 3px solid var(--primary-soft);
+        }
+
+        /* Checklist */
+        .checklist {
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.25rem;
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--gray-200);
+            transition: background 0.2s;
+        }
+
+        .checklist-item:hover {
+            background: var(--gray-50);
+        }
+
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+
+        .checklist-status {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .checklist-status.present {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .checklist-status.missing {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .checklist-status.unclear {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        /* Task Cards */
+        .task-card {
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: 1.75rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .task-card:hover {
+            border-color: var(--primary-soft);
+            box-shadow: var(--shadow-md);
+        }
+
+        .task-priority {
+            padding: 0.25rem 1rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .task-priority.high {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .task-priority.medium {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .task-priority.low {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .request-message {
+            background: var(--gray-50);
+            padding: 1.25rem;
+            border-radius: var(--radius-md);
+            font-family: 'Menlo', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            margin-top: 1rem;
+            border-left: 3px solid var(--primary);
+        }
+
+        /* Report Builder */
+        .report-section {
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .report-section:hover {
+            border-color: var(--primary-soft);
+        }
+
+        .editable-content {
+            min-height: 120px;
+            padding: 1.25rem;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            background: var(--gray-50);
+            font-family: inherit;
+            line-height: 1.6;
+        }
+
+        .editable-content:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.6rem 1.25rem;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 12px rgba(26, 95, 156, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(26, 95, 156, 0.4);
+        }
+
+        .btn-outline {
+            background: white;
+            border: 1px solid var(--gray-300);
+            color: var(--gray-700);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #b91c1c);
+            color: white;
+            box-shadow: 0 4px 12px rgba(192, 57, 43, 0.3);
+        }
+
+        .btn-sm {
+            padding: 0.4rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        /* Templates Grid */
+        .templates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 1.75rem;
+            margin-top: 2rem;
+        }
+
+        .template-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 1.75rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            transition: all 0.2s;
+        }
+
+        .template-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-soft);
+        }
+
+        .template-title {
+            font-size: 1.35rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .template-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .template-item:last-child {
+            border-bottom: none;
+        }
+
+        .template-item-required {
+            color: var(--primary);
+            font-size: 0.8rem;
+            font-weight: 500;
+            background: var(--primary-light);
+            padding: 0.2rem 0.6rem;
+            border-radius: 30px;
+        }
+
+        .template-item-optional {
+            color: var(--gray-600);
+            font-size: 0.8rem;
+            background: var(--gray-100);
+            padding: 0.2rem 0.6rem;
+            border-radius: 30px;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius-xl);
+            max-width: 500px;
+            width: 100%;
+            box-shadow: var(--shadow-xl);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.75rem;
+        }
+
+        .close {
+            font-size: 1.75rem;
+            cursor: pointer;
+            color: var(--gray-400);
+            transition: color 0.2s;
+            line-height: 1;
+        }
+
+        .close:hover {
+            color: var(--gray-600);
+        }
+
+        .flag-option {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .flag-option:hover {
+            background: var(--primary-light);
+            border-color: var(--primary);
+        }
+
+        /* Feedback Button */
+        .feedback-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            border: none;
+            font-size: 1.5rem;
+            transition: all 0.2s;
+            z-index: 100;
+        }
+
+        .feedback-btn:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-xl);
+        }
+
+        /* Search & Filter */
+        .search-box {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .filter-select {
+            padding: 0.75rem 2rem 0.75rem 1rem;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            background: white;
+            font-size: 0.95rem;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-6 { margin-top: 1.5rem; }
+        .mt-8 { margin-top: 2rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-8 { margin-bottom: 2rem; }
+
+        .flex { display: flex; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+
+        .justify-between { justify-content: space-between; }
+        .items-center { align-items: center; }
+
+        .text-gray { color: var(--gray-600); }
+        .text-sm { font-size: 0.875rem; }
+        .text-lg { font-size: 1.125rem; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+
+        /* Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.75rem;
+            margin-bottom: 2.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .nav-links {
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 0 1rem;
+            }
+            
+            .workspace-tabs {
+                overflow-x: auto;
+                padding: 0 1rem;
+                gap: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="disclaimer-banner">
+        ⚡ Prototype Version - Nicht für medizinische oder rechtliche Entscheidungen verwenden. Nur zu Testzwecken.
+    </div>
+
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <div class="brand-icon">GA</div>
+            <span class="brand-text">Gutachter Assistant</span>
+            <span class="prototype-badge">Prototype v0.4</span>
+        </div>
+        <div class="nav-links">
+            <a class="nav-link active" data-page="dashboard">Dashboard</a>
+            <a class="nav-link" data-page="cases">Fälle</a>
+            <a class="nav-link" data-page="templates">Vorlagen</a>
+            <a class="nav-link" data-page="reports">Berichte</a>
+            <div class="language-toggle">
+                <button class="lang-btn active">DE</button>
+                <button class="lang-btn">EN</button>
+            </div>
+            <button class="btn btn-outline btn-sm">
+                <span>👤</span> Dr. Schmidt
+            </button>
+        </div>
+    </nav>
+
+    <main class="app-container" id="app">
+        <!-- Dashboard View -->
+        <div id="dashboard-view">
+            <div class="flex justify-between items-center mb-8">
+                <h1>Dashboard</h1>
+                <div class="flex gap-4">
+                    <button class="btn btn-primary" onclick="createNewCase()">
+                        <span>+</span> Neuen Fall
+                    </button>
+                    <button class="btn btn-outline" onclick="loadDemoData()">
+                        <span>📁</span> Demo laden
+                    </button>
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="active-cases">12</div>
+                    <div class="stat-label">Aktive Fälle</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="attention-cases">5</div>
+                    <div class="stat-label">Benötigen Aufmerksamkeit</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="pending-tasks">8</div>
+                    <div class="stat-label">Ausstehende Aufgaben</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="due-week">3</div>
+                    <div class="stat-label">Fällig diese Woche</div>
+                </div>
+            </div>
+
+            <h2 class="mb-6">Aktuelle Fälle</h2>
+            <div class="case-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fall-ID</th>
+                            <th>Patient</th>
+                            <th>Typ</th>
+                            <th>Status</th>
+                            <th>Letzte Aktivität</th>
+                            <th>Dokumente</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="case-list">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Cases View -->
+        <div id="cases-view" class="hidden">
+            <div class="flex justify-between items-center mb-8">
+                <h1>Alle Fälle</h1>
+                <button class="btn btn-primary" onclick="createNewCase()">
+                    <span>+</span> Neuen Fall
+                </button>
+            </div>
+
+            <div class="flex gap-4 mb-6">
+                <input type="text" class="search-box" placeholder="Suchen nach Patient, ID, Typ..." id="caseSearch" onkeyup="filterCases()" style="flex: 1;">
+                <select class="filter-select" id="caseFilter" onchange="filterCases()">
+                    <option value="all">Alle Status</option>
+                    <option value="active">Aktiv</option>
+                    <option value="pending">In Bearbeitung</option>
+                    <option value="completed">Abgeschlossen</option>
+                </select>
+            </div>
+
+            <div class="case-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fall-ID</th>
+                            <th>Patient</th>
+                            <th>Typ</th>
+                            <th>Versicherung</th>
+                            <th>Status</th>
+                            <th>Erstellt</th>
+                            <th>Dokumente</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="all-cases-list">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Templates View -->
+        <div id="templates-view" class="hidden">
+            <div class="flex justify-between items-center mb-8">
+                <h1>Vorlagen</h1>
+                <button class="btn btn-primary" onclick="createNewTemplate()">
+                    <span>+</span> Neue Vorlage
+                </button>
+            </div>
+
+            <div class="templates-grid" id="templates-grid">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Reports View -->
+        <div id="reports-view" class="hidden">
+            <div class="flex justify-between items-center mb-8">
+                <h1>Berichte</h1>
+                <button class="btn btn-primary" onclick="exportAllReports()">
+                    <span>📥</span> Alle exportieren
+                </button>
+            </div>
+
+            <div class="case-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fall-ID</th>
+                            <th>Patient</th>
+                            <th>Typ</th>
+                            <th>Datum</th>
+                            <th>Status</th>
+                            <th>Dokumente</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reports-list">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Case Workspace View -->
+        <div id="workspace-view" class="hidden">
+            <div class="workspace-header">
+                <div>
+                    <h2 id="case-title">Fall #ORTH-2024-001</h2>
+                    <p class="text-gray mt-2" id="case-details">Patient: M.S. | Orthopädische Begutachtung | AOK Bayern</p>
+                </div>
+                <div class="flex gap-3">
+                    <button class="btn btn-outline btn-sm" onclick="exportReport()">
+                        <span>📄</span> Export
+                    </button>
+                    <button class="btn btn-outline btn-sm" onclick="showCases()">
+                        <span>←</span> Zurück
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteCase()">
+                        <span>🗑️</span> Löschen
+                    </button>
+                </div>
+            </div>
+
+            <div class="workspace-tabs">
+                <div class="tab active" data-tab="documents">📄 Dokumente</div>
+                <div class="tab" data-tab="findings">🔍 Befunde</div>
+                <div class="tab" data-tab="issues">⚠️ Probleme <span id="issues-count" class="status-badge warning">0</span></div>
+                <div class="tab" data-tab="tasks">✅ Aufgaben <span id="tasks-count" class="status-badge warning">0</span></div>
+                <div class="tab" data-tab="worklog">📋 Protokoll</div>
+                <div class="tab" data-tab="report">📝 Bericht</div>
+            </div>
+
+            <div class="workspace-content">
+                <!-- Documents Tab -->
+                <div id="documents-tab" class="tab-content">
+                    <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                        <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png" style="display: none;" onchange="handleFileSelect(this.files)">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📄</div>
+                        <div style="font-size: 1.25rem; font-weight: 500; margin-bottom: 0.5rem;">PDF oder Bilder hier ablegen</div>
+                        <div class="text-gray">oder klicken zum Hochladen</div>
+                        <div class="text-gray text-sm mt-2">Unterstützte Formate: PDF, JPG, PNG (max. 50MB)</div>
+                        <div class="upload-progress hidden" id="uploadProgress">
+                            <div class="progress-bar" id="progressBar"></div>
+                        </div>
+                    </div>
+
+                    <div class="document-list" id="document-list">
+                        <!-- Documents will be displayed here -->
+                    </div>
+
+                    <button class="btn btn-primary mt-6" onclick="scanDocuments()" id="scanBtn" disabled>
+                        <span>🔍</span> Dokumente scannen
+                    </button>
+                </div>
+
+                <!-- Findings Tab -->
+                <div id="findings-tab" class="tab-content hidden">
+                    <h3 class="mb-6">Erforderliche Dokumente - Orthopädische Begutachtung</h3>
+                    <div class="checklist" id="checklist">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Issues Tab -->
+                <div id="issues-tab" class="tab-content hidden">
+                    <h3 class="mb-6">Erkannte Probleme & Inkonsistenzen</h3>
+                    <div id="issues-list">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Tasks Tab -->
+                <div id="tasks-tab" class="tab-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3>Automatisch generierte Aufgaben</h3>
+                        <button class="btn btn-primary" onclick="generateTasks()">
+                            <span>⚡</span> Neu generieren
+                        </button>
+                    </div>
+                    <div id="tasks-list">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Work Log Tab -->
+                <div id="worklog-tab" class="tab-content hidden">
+                    <h3 class="mb-6">Arbeitsprotokoll</h3>
+                    <div id="worklog-list">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                    <div class="mt-6">
+                        <textarea class="editable-content" id="newWorkNote" style="width: 100%;" placeholder="Neue Notiz hinzufügen..."></textarea>
+                        <button class="btn btn-primary mt-4" onclick="addWorkNote()">
+                            <span>💾</span> Notiz speichern
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Report Tab -->
+                <div id="report-tab" class="tab-content hidden">
+                    <h3 class="mb-6">Berichtsentwurf</h3>
+                    <div id="report-content">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                    <div class="flex gap-4 mt-6">
+                        <button class="btn btn-primary" onclick="exportPDF()">
+                            <span>📥</span> Als PDF exportieren
+                        </button>
+                        <button class="btn btn-outline" onclick="regenerateReport()">
+                            <span>🔄</span> Neu generieren
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Feedback Button -->
+    <button class="feedback-btn" onclick="showFeedbackModal()">💬</button>
+
+    <!-- Feedback Modal -->
+    <div id="feedback-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Feedback geben</h3>
+                <span class="close" onclick="hideFeedbackModal()">&times;</span>
+            </div>
+            <p class="text-gray mb-4">Was ist nicht korrekt oder könnte verbessert werden?</p>
+            <div class="flag-option" onclick="submitFeedback('document-classification')">
+                <span style="font-size: 1.25rem;">📄</span> Falsche Dokumentenklassifizierung
+            </div>
+            <div class="flag-option" onclick="submitFeedback('missing-detection')">
+                <span style="font-size: 1.25rem;">🔍</span> Fehlendes Dokument nicht erkannt
+            </div>
+            <div class="flag-option" onclick="submitFeedback('wrong-task')">
+                <span style="font-size: 1.25rem;">📋</span> Falsche Aufgaben generiert
+            </div>
+            <div class="flag-option" onclick="submitFeedback('other')">
+                <span style="font-size: 1.25rem;">✏️</span> Sonstiges
+            </div>
+            <textarea class="editable-content mt-4" id="feedbackText" style="width: 100%;" placeholder="Weitere Details..."></textarea>
+            <button class="btn btn-primary mt-4" onclick="submitFeedbackWithText()" style="width: 100%;">
+                Feedback senden
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // [ALL THE JAVASCRIPT CODE REMAINS EXACTLY THE SAME AS BEFORE]
+        // State management
+        let currentView = 'dashboard';
+        let currentCase = null;
+        let cases = [];
+        let documents = [];
+        let workLog = [];
+        let checklistItems = [];
+        let issues = [];
+        let tasks = [];
+        let reportSections = [];
+
+        // Templates data
+        const templates = [
+            {
+                id: 1,
+                name: 'Orthopädische Begutachtung',
+                items: [
+                    { name: 'Überweisung mit Fragestellung', required: true },
+                    { name: 'Aktuelle Bildgebung (< 6 Monate)', required: true },
+                    { name: 'OP-Berichte', required: false },
+                    { name: 'Physiotherapie-Berichte', required: false },
+                    { name: 'Schmerztagebuch', required: false },
+                    { name: 'Einwilligungserklärung', required: true },
+                    { name: 'Vorbefunde', required: true }
+                ]
+            },
+            {
+                id: 2,
+                name: 'Schmerztherapie-Assessment',
+                items: [
+                    { name: 'Überweisung', required: true },
+                    { name: 'Schmerzfragebogen', required: true },
+                    { name: 'Medikamentenplan', required: true },
+                    { name: 'Vorbefunde', required: true },
+                    { name: 'Psychologischer Befund', required: false },
+                    { name: 'Einwilligung', required: true }
+                ]
+            },
+            {
+                id: 3,
+                name: 'Berufliche Leistungsfähigkeit',
+                items: [
+                    { name: 'Arbeitsplatzbeschreibung', required: true },
+                    { name: 'Arbeitsunfähigkeitszeiten', required: true },
+                    { name: 'Ärztliche Befunde', required: true },
+                    { name: 'Stellenbeschreibung', required: true },
+                    { name: 'Einwilligung Arbeitgeber', required: true }
+                ]
+            }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDemoData();
+            setupEventListeners();
+            setupDragAndDrop();
+            updateNavigation('dashboard');
+        });
+
+        function setupEventListeners() {
+            // Navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const page = e.target.dataset.page;
+                    navigateTo(page);
+                });
+            });
+
+            // Tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    const tabName = e.target.dataset.tab;
+                    switchTab(tabName);
+                });
+            });
+        }
+
+        function navigateTo(page) {
+            // Update navigation active state
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.dataset.page === page) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Hide all views
+            document.getElementById('dashboard-view').classList.add('hidden');
+            document.getElementById('cases-view').classList.add('hidden');
+            document.getElementById('templates-view').classList.add('hidden');
+            document.getElementById('reports-view').classList.add('hidden');
+            document.getElementById('workspace-view').classList.add('hidden');
+
+            // Show selected view
+            switch(page) {
+                case 'dashboard':
+                    document.getElementById('dashboard-view').classList.remove('hidden');
+                    updateCaseList();
+                    break;
+                case 'cases':
+                    document.getElementById('cases-view').classList.remove('hidden');
+                    updateAllCasesList();
+                    break;
+                case 'templates':
+                    document.getElementById('templates-view').classList.remove('hidden');
+                    updateTemplatesList();
+                    break;
+                case 'reports':
+                    document.getElementById('reports-view').classList.remove('hidden');
+                    updateReportsList();
+                    break;
+            }
+            
+            currentView = page;
+        }
+
+        function showCases() {
+            navigateTo('cases');
+        }
+
+        function updateAllCasesList() {
+            const tbody = document.getElementById('all-cases-list');
+            tbody.innerHTML = cases.map(c => `
+                <tr>
+                    <td><span class="font-medium">${c.id}</span></td>
+                    <td>${c.patient}</td>
+                    <td>${c.type}</td>
+                    <td>${c.insurer}</td>
+                    <td><span class="status-badge ${c.status.includes('prüfen') ? 'warning' : c.status.includes('Neu') ? 'primary' : c.status.includes('Abgeschlossen') ? 'success' : ''}">${c.status}</span></td>
+                    <td>${c.created || '2024-01-15'}</td>
+                    <td><span class="status-badge info">${c.documents || 0} Dokumente</span></td>
+                    <td><button class="btn btn-primary btn-sm" onclick="showWorkspace('${c.id}')">Öffnen</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function filterCases() {
+            const searchTerm = document.getElementById('caseSearch').value.toLowerCase();
+            const filter = document.getElementById('caseFilter').value;
+            
+            const filteredCases = cases.filter(c => {
+                const matchesSearch = c.patient.toLowerCase().includes(searchTerm) || 
+                                    c.id.toLowerCase().includes(searchTerm) ||
+                                    c.type.toLowerCase().includes(searchTerm);
+                
+                if (filter === 'all') return matchesSearch;
+                if (filter === 'active') return matchesSearch && c.status !== 'Abgeschlossen';
+                if (filter === 'pending') return matchesSearch && c.status.includes('prüfen');
+                if (filter === 'completed') return matchesSearch && c.status === 'Abgeschlossen';
+                
+                return matchesSearch;
+            });
+            
+            const tbody = document.getElementById('all-cases-list');
+            tbody.innerHTML = filteredCases.map(c => `
+                <tr>
+                    <td><span class="font-medium">${c.id}</span></td>
+                    <td>${c.patient}</td>
+                    <td>${c.type}</td>
+                    <td>${c.insurer}</td>
+                    <td><span class="status-badge ${c.status.includes('prüfen') ? 'warning' : c.status.includes('Neu') ? 'primary' : c.status.includes('Abgeschlossen') ? 'success' : ''}">${c.status}</span></td>
+                    <td>${c.created || '2024-01-15'}</td>
+                    <td><span class="status-badge info">${c.documents || 0} Dokumente</span></td>
+                    <td><button class="btn btn-primary btn-sm" onclick="showWorkspace('${c.id}')">Öffnen</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function updateTemplatesList() {
+            const grid = document.getElementById('templates-grid');
+            grid.innerHTML = templates.map(t => `
+                <div class="template-card">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="template-title">${t.name}</span>
+                        <span class="status-badge primary">${t.items.length} Positionen</span>
+                    </div>
+                    <div class="template-items">
+                        ${t.items.map(item => `
+                            <div class="template-item">
+                                <span>${item.name}</span>
+                                <span class="${item.required ? 'template-item-required' : 'template-item-optional'}">
+                                    ${item.required ? 'erforderlich' : 'optional'}
+                                </span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="flex gap-3 mt-6">
+                        <button class="btn btn-outline btn-sm flex-1" onclick="editTemplate(${t.id})">
+                            <span>✏️</span> Bearbeiten
+                        </button>
+                        <button class="btn btn-primary btn-sm flex-1" onclick="useTemplate(${t.id})">
+                            <span>📋</span> Verwenden
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateReportsList() {
+            const tbody = document.getElementById('reports-list');
+            
+            // Generate reports from cases
+            const reports = cases.map(c => ({
+                id: c.id,
+                patient: c.patient,
+                type: c.type,
+                date: c.lastActivity,
+                status: 'Entwurf',
+                documents: c.documents || 0
+            }));
+            
+            tbody.innerHTML = reports.map(r => `
+                <tr>
+                    <td><span class="font-medium">${r.id}</span></td>
+                    <td>${r.patient}</td>
+                    <td>${r.type}</td>
+                    <td>${r.date}</td>
+                    <td><span class="status-badge warning">${r.status}</span></td>
+                    <td><span class="status-badge info">${r.documents} Dokumente</span></td>
+                    <td>
+                        <div class="flex gap-2">
+                            <button class="btn btn-outline btn-sm" onclick="showWorkspace('${r.id}')">
+                                <span>👁️</span>
+                            </button>
+                            <button class="btn btn-outline btn-sm" onclick="exportReport('${r.id}')">
+                                <span>📥</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function setupDragAndDrop() {
+            const dropZone = document.getElementById('dropZone');
+            if (!dropZone) return;
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight() {
+                dropZone.classList.add('dragover');
+            }
+
+            function unhighlight() {
+                dropZone.classList.remove('dragover');
+            }
+
+            dropZone.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            }
+        }
+
+        function handleFileSelect(files) {
+            handleFiles(files);
+        }
+
+        function handleFiles(files) {
+            const progressBar = document.getElementById('progressBar');
+            const uploadProgress = document.getElementById('uploadProgress');
+            
+            uploadProgress.classList.remove('hidden');
+            
+            let loaded = 0;
+            const interval = setInterval(() => {
+                loaded += 10;
+                progressBar.style.width = loaded + '%';
+                
+                if (loaded >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        uploadProgress.classList.add('hidden');
+                        processUploadedFiles(files);
+                    }, 500);
+                }
+            }, 100);
+        }
+
+        function processUploadedFiles(files) {
+            Array.from(files).forEach(file => {
+                // Create a file reader to read the file content
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    // Simulate document processing
+                    const doc = {
+                        name: file.name,
+                        size: (file.size / 1024).toFixed(2) + ' KB',
+                        type: classifyDocument(file.name),
+                        confidence: generateConfidence(file.name),
+                        text: extractTextPreview(file.name),
+                        pages: Math.floor(Math.random() * 5) + 1,
+                        content: e.target.result,
+                        uploadDate: new Date().toLocaleString()
+                    };
+                    
+                    documents.push(doc);
+                    updateDocumentList();
+                    
+                    // Update case document count
+                    if (currentCase) {
+                        currentCase.documents = documents.length;
+                    }
+                    
+                    // Add to work log
+                    addToWorkLog('Dokument hochgeladen', `${file.name} (${doc.size})`);
+                    
+                    // Enable scan button if we have documents
+                    document.getElementById('scanBtn').disabled = documents.length === 0;
+                };
+                
+                // Read as data URL
+                reader.readAsDataURL(file);
+            });
+            
+            // Update checklist and issues based on new documents
+            updateChecklistFromDocuments();
+            detectIssues();
+            updateIssuesList();
+        }
+
+        function classifyDocument(filename) {
+            // Simple classification based on filename
+            const name = filename.toLowerCase();
+            if (name.includes('ueberweisung') || name.includes('überweisung')) return 'Überweisung';
+            if (name.includes('mrt') || name.includes('ct') || name.includes('röntgen') || name.includes('roentgen')) return 'Bildgebungsbericht';
+            if (name.includes('op') || name.includes('operation')) return 'OP-Bericht';
+            if (name.includes('entlass') || name.includes('brief')) return 'Entlassbrief';
+            if (name.includes('einwilligung')) return 'Einwilligung';
+            if (name.includes('vorbefund')) return 'Vorbefund';
+            if (name.includes('rechnung') || name.includes('invoice')) return 'Rechnung';
+            return 'Sonstiges';
+        }
+
+        function generateConfidence(filename) {
+            // Simulate confidence based on filename patterns
+            const name = filename.toLowerCase();
+            if (name.includes('schlecht') || name.includes('unleserlich') || name.includes('poor')) {
+                return Math.floor(Math.random() * 30) + 30; // 30-60%
+            }
+            if (name.includes('test') || name.includes('demo')) {
+                return Math.floor(Math.random() * 40) + 40; // 40-80%
+            }
+            return Math.floor(Math.random() * 20) + 75; // 75-95%
+        }
+
+        function extractTextPreview(filename) {
+            // Simulate extracted text based on filename
+            const name = filename.toLowerCase();
+            if (name.includes('ueberweisung')) {
+                return 'Überweisung zur orthopädischen Begutachtung vom 15.01.2024. Patient: Klaus Wagner, *12.08.1972. Fragestellung: Berufliche Leistungsfähigkeit nach Knie-OP.';
+            }
+            if (name.includes('mrt')) {
+                return 'MRT LWS vom 22.12.2023: Protrusion L4/L5 ohne Nervenwurzelkompression. Beurteilung: Dr. Wagner. [Unterschrift fehlt]';
+            }
+            if (name.includes('op')) {
+                return 'OP-Bericht vom 05.11.2023: Arthroskopie rechtes Kniegelenk. [Scan-Qualität niedrig - manuelle Prüfung empfohlen]';
+            }
+            if (name.includes('entlass')) {
+                return 'Entlassbrief: Aufnahme 08.12.2023, Entlassung 07.12.2023. Diagnose: Lumbago. [Inkonsistente Daten]';
+            }
+            if (name.includes('einwilligung')) {
+                return 'Einwilligungserklärung für Gutachtenerstellung. Unterschrieben am 10.01.2024.';
+            }
+            return 'OCR-extrahierten Text: Lorem ipsum dolor sit amet, consectetur adipiscing elit...';
+        }
+
+        function updateDocumentList() {
+            const list = document.getElementById('document-list');
+            if (documents.length === 0) {
+                list.innerHTML = '<p class="text-gray text-center py-8">Keine Dokumente hochgeladen. Bitte Dokumente hochladen.</p>';
+                return;
+            }
+            
+            list.innerHTML = documents.map((doc, index) => `
+                <div class="document-item">
+                    <div class="document-icon">📄</div>
+                    <div class="confidence ${doc.confidence > 80 ? 'high' : doc.confidence > 50 ? 'medium' : 'low'}">${doc.confidence}%</div>
+                    <div class="document-info">
+                        <div class="flex items-center gap-3">
+                            <span class="font-medium">${doc.name}</span>
+                            <span class="document-type">${doc.type}</span>
+                        </div>
+                        <div class="flex gap-4 items-center mt-2">
+                            <span class="text-gray text-sm">📄 ${doc.pages} Seiten</span>
+                            <span class="text-gray text-sm">📦 ${doc.size}</span>
+                            <span class="text-gray text-sm">🕒 ${doc.uploadDate}</span>
+                        </div>
+                        <div class="document-preview">${doc.text}</div>
+                    </div>
+                    <div class="remove-doc" onclick="removeDocument(${index})">✕</div>
+                </div>
+            `).join('');
+        }
+
+        function removeDocument(index) {
+            const doc = documents[index];
+            documents.splice(index, 1);
+            updateDocumentList();
+            addToWorkLog('Dokument entfernt', doc.name);
+            
+            // Update scan button state
+            document.getElementById('scanBtn').disabled = documents.length === 0;
+            
+            // Update checklist and issues
+            updateChecklistFromDocuments();
+            detectIssues();
+            updateIssuesList();
+        }
+
+        function updateChecklistFromDocuments() {
+            // Create checklist based on uploaded documents
+            const requiredDocs = [
+                'Überweisung',
+                'Bildgebungsbericht',
+                'OP-Bericht',
+                'Einwilligung',
+                'Vorbefund',
+                'Entlassbrief'
+            ];
+            
+            checklistItems = requiredDocs.map(reqDoc => {
+                const found = documents.find(d => d.type === reqDoc);
+                if (found) {
+                    // Check for issues in the document
+                    if (found.text.includes('fehlt') || found.text.includes('unleserlich')) {
+                        return {
+                            name: reqDoc,
+                            status: 'unclear',
+                            snippet: found.text.substring(0, 100),
+                            page: 1,
+                            document: found.name
+                        };
+                    }
+                    if (found.text.includes('Inkonsistente Daten')) {
+                        return {
+                            name: reqDoc,
+                            status: 'unclear',
+                            snippet: 'Inkonsistente Daten gefunden',
+                            page: 1,
+                            document: found.name
+                        };
+                    }
+                    return {
+                        name: reqDoc,
+                        status: 'present',
+                        snippet: found.text.substring(0, 100),
+                        page: 1,
+                        document: found.name
+                    };
+                }
+                return {
+                    name: reqDoc,
+                    status: 'missing',
+                    snippet: 'Nicht vorhanden',
+                    page: null,
+                    document: null
+                };
+            });
+            
+            updateChecklist();
+        }
+
+        function detectIssues() {
+            issues = [];
+            
+            documents.forEach(doc => {
+                // Check for missing signatures
+                if (doc.text.toLowerCase().includes('unterschrift fehlt') || 
+                    doc.text.toLowerCase().includes('fehlende unterschrift')) {
+                    issues.push({
+                        category: 'Fehlende Unterschrift',
+                        severity: 'Hoch',
+                        description: `Unterschrift fehlt in ${doc.name}`,
+                        evidence: doc.text.substring(0, 200),
+                        recommendation: 'Dokument mit Unterschrift nachfordern',
+                        document: doc.name
+                    });
+                }
+                
+                // Check for poor quality
+                if (doc.confidence < 60 || doc.text.includes('Qualität niedrig') || doc.text.includes('unleserlich')) {
+                    issues.push({
+                        category: 'Qualitätsmangel',
+                        severity: 'Mittel',
+                        description: `${doc.name} hat schlechte Qualität (${doc.confidence}%)`,
+                        evidence: 'Scan-Qualität beeinträchtigt Lesbarkeit',
+                        recommendation: 'Bessere Kopie anfordern',
+                        document: doc.name
+                    });
+                }
+                
+                // Check for date inconsistencies
+                if (doc.text.includes('Entlassung') && doc.text.includes('Aufnahme')) {
+                    issues.push({
+                        category: 'Inkonsistenz',
+                        severity: 'Mittel',
+                        description: 'Entlassungsdatum liegt vor Aufnahmedatum',
+                        evidence: doc.text,
+                        recommendation: 'Datenabgleich mit Klinik',
+                        document: doc.name
+                    });
+                }
+            });
+            
+            // Check for missing critical documents
+            if (!documents.find(d => d.type === 'Einwilligung')) {
+                issues.push({
+                    category: 'Fehlendes Dokument',
+                    severity: 'Hoch',
+                    description: 'Einwilligungserklärung fehlt',
+                    evidence: 'Notwendig für Gutachtenerstellung',
+                    recommendation: 'Einwilligung vom Patienten anfordern',
+                    document: null
+                });
+            }
+            
+            if (!documents.find(d => d.type === 'Überweisung')) {
+                issues.push({
+                    category: 'Fehlendes Dokument',
+                    severity: 'Hoch',
+                    description: 'Überweisung mit Fragestellung fehlt',
+                    evidence: 'Grundlage der Begutachtung',
+                    recommendation: 'Überweisung vom Auftraggeber anfordern',
+                    document: null
+                });
+            }
+            
+            updateIssuesCount();
+        }
+
+        function updateIssuesCount() {
+            document.getElementById('issues-count').textContent = issues.length;
+        }
+
+        function showDashboard() {
+            navigateTo('dashboard');
+        }
+
+        function showWorkspace(caseId) {
+            currentView = 'workspace';
+            currentCase = cases.find(c => c.id === caseId) || cases[0];
+            
+            // Hide all other views
+            document.getElementById('dashboard-view').classList.add('hidden');
+            document.getElementById('cases-view').classList.add('hidden');
+            document.getElementById('templates-view').classList.add('hidden');
+            document.getElementById('reports-view').classList.add('hidden');
+            document.getElementById('workspace-view').classList.remove('hidden');
+            
+            document.getElementById('case-title').textContent = `Fall #${currentCase.id}`;
+            document.getElementById('case-details').textContent = `Patient: ${currentCase.patient} | ${currentCase.type} | ${currentCase.insurer}`;
+            
+            // Load case data
+            documents = []; // Reset documents for this case
+            workLog = []; // Reset work log
+            issues = []; // Reset issues
+            tasks = []; // Reset tasks
+            
+            updateDocumentList();
+            updateChecklist();
+            updateIssuesList();
+            updateTasksList();
+            updateWorkLog();
+            updateReport();
+            
+            // Add to work log
+            addToWorkLog('Fall geöffnet', `Fall #${currentCase.id} wurde geöffnet`);
+        }
+
+        function updateCaseList() {
+            const tbody = document.getElementById('case-list');
+            tbody.innerHTML = cases.slice(0, 5).map(c => `
+                <tr>
+                    <td><span class="font-medium">${c.id}</span></td>
+                    <td>${c.patient}</td>
+                    <td>${c.type}</td>
+                    <td><span class="status-badge ${c.status.includes('prüfen') ? 'warning' : ''}">${c.status}</span></td>
+                    <td>${c.lastActivity}</td>
+                    <td><span class="status-badge info">${c.documents || 0} Dokumente</span></td>
+                    <td><button class="btn btn-primary btn-sm" onclick="showWorkspace('${c.id}')">Öffnen</button></td>
+                </tr>
+            `).join('');
+            
+            // Update stats
+            document.getElementById('active-cases').textContent = cases.length;
+            document.getElementById('attention-cases').textContent = cases.filter(c => c.status.includes('prüfen')).length;
+            document.getElementById('pending-tasks').textContent = cases.reduce((sum, c) => sum + (c.tasks || 0), 0);
+            document.getElementById('due-week').textContent = cases.filter(c => c.status === 'In Bearbeitung').length;
+        }
+
+        function updateChecklist() {
+            const checklist = document.getElementById('checklist');
+            if (!checklistItems.length) {
+                checklist.innerHTML = '<p class="text-gray text-center py-8">Keine Checkliste verfügbar. Bitte zuerst Dokumente hochladen.</p>';
+                return;
+            }
+            
+            checklist.innerHTML = checklistItems.map(item => `
+                <div class="checklist-item">
+                    <div class="checklist-status ${item.status}">${item.status === 'present' ? '✓' : item.status === 'missing' ? '✗' : '?'}</div>
+                    <div style="flex: 1">
+                        <div class="flex items-center gap-3">
+                            <span class="font-medium">${item.name}</span>
+                            <span class="text-sm status-badge ${item.status === 'present' ? 'success' : item.status === 'missing' ? 'warning' : 'warning'}">
+                                ${item.status === 'present' ? 'Vorhanden' : item.status === 'missing' ? 'Fehlt' : 'Unklar'}
+                            </span>
+                        </div>
+                        ${item.document ? `<div class="text-gray text-sm mt-1">Dokument: ${item.document}</div>` : ''}
+                        ${item.snippet ? `<div class="snippet mt-2">${item.snippet} ${item.page ? `(Seite ${item.page})` : ''}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateIssuesList() {
+            const list = document.getElementById('issues-list');
+            if (!issues.length) {
+                list.innerHTML = '<p class="text-gray text-center py-8">Keine Probleme erkannt.</p>';
+                return;
+            }
+            
+            list.innerHTML = issues.map(issue => `
+                <div class="task-card">
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="task-priority ${issue.severity === 'Hoch' ? 'high' : issue.severity === 'Mittel' ? 'medium' : 'low'}">${issue.severity}</span>
+                        <span class="status-badge primary">${issue.category}</span>
+                    </div>
+                    <div class="font-medium text-lg mb-2">${issue.description}</div>
+                    ${issue.document ? `<div class="text-gray mb-2">Dokument: ${issue.document}</div>` : ''}
+                    <div class="snippet">${issue.evidence}</div>
+                    <div class="mt-3 p-3 bg-gray-50 rounded-md">
+                        <strong>Empfehlung:</strong> ${issue.recommendation}
+                    </div>
+                    <button class="btn btn-outline btn-sm mt-3" onclick="showFeedbackModal()">
+                        ⚠️ Falsche Erkennung melden
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function updateTasksList() {
+            const list = document.getElementById('tasks-list');
+            
+            // Generate tasks based on issues
+            tasks = issues.map((issue, index) => ({
+                title: issue.recommendation,
+                target: issue.document ? 'Klinik' : 'Patient',
+                priority: issue.severity === 'Hoch' ? 'high' : 'medium',
+                message: generateTaskMessage(issue),
+                issue: issue
+            }));
+            
+            document.getElementById('tasks-count').textContent = tasks.length;
+            
+            if (!tasks.length) {
+                list.innerHTML = '<p class="text-gray text-center py-8">Keine Aufgaben generiert.</p>';
+                return;
+            }
+            
+            list.innerHTML = tasks.map(task => `
+                <div class="task-card">
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="task-priority ${task.priority}">${task.priority === 'high' ? 'Hoch' : 'Mittel'}</span>
+                        <span class="status-badge primary">An: ${task.target}</span>
+                    </div>
+                    <div class="font-medium text-lg mb-3">${task.title}</div>
+                    <div class="request-message">${task.message}</div>
+                    <div class="flex gap-3 mt-4">
+                        <button class="btn btn-primary btn-sm flex-1" onclick="markTaskDone(this)">
+                            ✓ Als erledigt
+                        </button>
+                        <button class="btn btn-outline btn-sm flex-1" onclick="editTask(this)">
+                            ✏️ Bearbeiten
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function generateTaskMessage(issue) {
+            if (issue.category.includes('Unterschrift')) {
+                return `Sehr geehrte Damen und Herren,\n\nfür die Vervollständigung der Gutachtenunterlagen benötigen wir eine unterschriebene Version des Dokuments "${issue.document}". Die aktuelle Version enthält keine gültige Unterschrift.\n\nMit freundlichen Grüßen\nIhr Gutachter-Team`;
+            }
+            if (issue.category.includes('Qualität')) {
+                return `Sehr geehrte Damen und Herren,\n\ndas Dokument "${issue.document}" ist in schlechter Qualität und schwer lesbar. Bitte senden Sie uns eine besser lesbare Kopie zu.\n\nMit freundlichen Grüßen\nIhr Gutachter-Team`;
+            }
+            if (issue.category.includes('Fehlendes Dokument')) {
+                return `Sehr geehrte/r Patient/in,\n\nfür die Erstellung des Gutachtens benötigen wir noch folgende Unterlagen:\n- ${issue.description}\n\nBitte senden Sie uns diese zeitnah zu.\n\nMit freundlichen Grüßen\nIhr Gutachter-Team`;
+            }
+            return `Sehr geehrte Damen und Herren,\n\nim Rahmen der Begutachtung wurde folgende Inkonsistenz festgestellt: ${issue.description}. Bitte klären Sie dies.\n\nMit freundlichen Grüßen\nIhr Gutachter-Team`;
+        }
+
+        function updateWorkLog() {
+            const list = document.getElementById('worklog-list');
+            if (!workLog.length) {
+                list.innerHTML = '<p class="text-gray text-center py-8">Keine Einträge im Arbeitsprotokoll.</p>';
+                return;
+            }
+            
+            list.innerHTML = workLog.map(entry => `
+                <div class="task-card">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="font-medium">${entry.action}</span>
+                        <span class="text-gray text-sm">${entry.timestamp}</span>
+                    </div>
+                    <div class="text-gray mb-2">${entry.user}</div>
+                    <div class="p-3 bg-gray-50 rounded-md">${entry.details}</div>
+                </div>
+            `).join('');
+        }
+
+        function addToWorkLog(action, details) {
+            const entry = {
+                timestamp: new Date().toLocaleString(),
+                user: 'Dr. Schmidt',
+                action: action,
+                details: details
+            };
+            workLog.unshift(entry);
+            if (currentView === 'workspace') {
+                updateWorkLog();
+            }
+        }
+
+        function addWorkNote() {
+            const note = document.getElementById('newWorkNote').value;
+            if (note.trim()) {
+                addToWorkLog('Notiz hinzugefügt', note);
+                document.getElementById('newWorkNote').value = '';
+            }
+        }
+
+        function updateReport() {
+            const report = document.getElementById('report-content');
+            
+            // Generate report sections based on documents
+            const patientInfo = currentCase ? `${currentCase.patient}, ${currentCase.type}` : 'Patienteninformationen';
+            
+            reportSections = [
+                { 
+                    title: 'Anamnese', 
+                    content: `Der Patient ${patientInfo} stellte sich zur Begutachtung vor. ${
+                        documents.find(d => d.type === 'Überweisung')?.text.split('.')[0] || 'Die Beschwerden bestehen seit mehreren Monaten.'
+                    }`
+                },
+                { 
+                    title: 'Befunde', 
+                    content: documents.filter(d => d.type.includes('Bildgebung') || d.type.includes('OP')).map(d => 
+                        `- Aus ${d.name}: ${d.text.substring(0, 100)}...`
+                    ).join('\n') || 'Keine Bildgebungsbefunde vorhanden.'
+                },
+                { 
+                    title: 'Beurteilung', 
+                    content: `Basierend auf den vorliegenden Dokumenten (${
+                        documents.length
+                    } Dokumente) ergibt sich folgende Beurteilung:\n\n${
+                        issues.filter(i => i.severity === 'Hoch').map(i => 
+                            `- Wichtiger Befund: ${i.description}`
+                        ).join('\n') || 'Keine auffälligen Befunde.'
+                    }`
+                },
+                { 
+                    title: 'Zusammenfassung und Empfehlung', 
+                    content: `Es wird empfohlen, folgende fehlende Informationen anzufordern:\n${
+                        issues.map(i => `- ${i.recommendation}`).join('\n') || 'Alle erforderlichen Dokumente liegen vor.'
+                    }`
+                }
+            ];
+            
+            report.innerHTML = reportSections.map(section => `
+                <div class="report-section">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-lg font-semibold">${section.title}</h4>
+                        <button class="btn btn-outline btn-sm" onclick="editSection('${section.title}')">
+                            <span>✏️</span> Bearbeiten
+                        </button>
+                    </div>
+                    <div class="editable-content" contenteditable="true">${section.content}</div>
+                    <button class="btn btn-outline btn-sm mt-3" onclick="showFeedbackModal()">
+                        ⚠️ Falsche Ausgabe melden
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+        }
+
+        // Actions
+        function createNewCase() {
+            const newCase = {
+                id: `CASE-${Math.floor(Math.random() * 1000)}`,
+                patient: 'Neuer Patient',
+                type: 'Orthopädische Begutachtung',
+                insurer: 'Noch nicht zugewiesen',
+                status: 'Neu',
+                lastActivity: new Date().toISOString().split('T')[0],
+                created: new Date().toISOString().split('T')[0],
+                documents: 0,
+                tasks: 0
+            };
+            cases.push(newCase);
+            documents = [];
+            workLog = [];
+            issues = [];
+            tasks = [];
+            
+            // Update all views
+            updateCaseList();
+            updateAllCasesList();
+            updateReportsList();
+            
+            showWorkspace(newCase.id);
+            addToWorkLog('Fall erstellt', 'Neuer Fall angelegt');
+        }
+
+        function loadDemoData() {
+            cases = [
+                { id: 'ORTH-2024-001', patient: 'Max Schmidt', type: 'Orthopädische Begutachtung', insurer: 'AOK Bayern', status: 'In Bearbeitung', lastActivity: '2024-01-15', created: '2024-01-10', documents: 4, tasks: 3 },
+                { id: 'SCHM-2024-002', patient: 'Maria Fischer', type: 'Schmerztherapie', insurer: 'TK', status: 'Dokumente prüfen', lastActivity: '2024-01-14', created: '2024-01-12', documents: 2, tasks: 5 },
+                { id: 'BERUF-2024-003', patient: 'Klaus Wagner', type: 'Berufliche Leistungsfähigkeit', insurer: 'Deutsche Rentenversicherung', status: 'Berichtserstellung', lastActivity: '2024-01-13', created: '2024-01-05', documents: 3, tasks: 2 },
+                { id: 'ORTH-2024-004', patient: 'Anna Becker', type: 'Orthopädische Begutachtung', insurer: 'IKK', status: 'Abgeschlossen', lastActivity: '2024-01-10', created: '2024-01-02', documents: 5, tasks: 0 },
+            ];
+            
+            // Update all views
+            updateCaseList();
+            updateAllCasesList();
+            updateReportsList();
+            
+            addToWorkLog('Demo-Daten geladen', 'Testfälle wurden geladen');
+        }
+
+        function scanDocuments() {
+            if (documents.length === 0) {
+                alert('Bitte zuerst Dokumente hochladen.');
+                return;
+            }
+            
+            addToWorkLog('Dokumente gescannt', `${documents.length} Dokumente analysiert`);
+            detectIssues();
+            updateIssuesList();
+            updateChecklistFromDocuments();
+            generateTasks();
+            alert(`${documents.length} Dokumente wurden gescannt und analysiert. ${issues.length} Probleme erkannt.`);
+        }
+
+        function generateTasks() {
+            updateTasksList();
+            addToWorkLog('Aufgaben generiert', `${tasks.length} neue Aufgaben erstellt`);
+            alert(`${tasks.length} Aufgaben wurden basierend auf den erkannten Problemen generiert.`);
+        }
+
+        function exportReport(caseId) {
+            const reportCase = cases.find(c => c.id === (caseId || currentCase?.id));
+            if (!reportCase) return;
+            
+            const reportContent = `Gutachten #${reportCase.id}\nPatient: ${reportCase.patient}\nTyp: ${reportCase.type}\nDatum: ${new Date().toLocaleString()}\n\n${reportSections.map(s => `${s.title}\n${s.content}`).join('\n\n')}`;
+            
+            const blob = new Blob([reportContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Gutachten_${reportCase.id}_${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            addToWorkLog('Bericht exportiert', `Bericht für ${reportCase.id} exportiert`);
+        }
+
+        function exportAllReports() {
+            alert('Alle Berichte werden exportiert (Demo-Funktion)');
+            cases.forEach(c => exportReport(c.id));
+        }
+
+        function deleteCase() {
+            if (confirm('Fall wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) {
+                const index = cases.findIndex(c => c.id === currentCase?.id);
+                if (index !== -1) {
+                    cases.splice(index, 1);
+                }
+                
+                // Update all views
+                updateCaseList();
+                updateAllCasesList();
+                updateReportsList();
+                
+                showCases();
+            }
+        }
+
+        function editTemplate(id) {
+            const template = templates.find(t => t.id === id);
+            alert(`Vorlage "${template.name}" bearbeiten (Demo-Funktion)`);
+        }
+
+        function useTemplate(id) {
+            const template = templates.find(t => t.id === id);
+            createNewCase();
+            alert(`Vorlage "${template.name}" wird für neuen Fall verwendet`);
+        }
+
+        function createNewTemplate() {
+            alert('Neue Vorlage erstellen (Demo-Funktion)');
+        }
+
+        function markTaskDone(button) {
+            const taskCard = button.closest('.task-card');
+            taskCard.style.opacity = '0.5';
+            button.textContent = '✓ Erledigt';
+            button.disabled = true;
+            addToWorkLog('Aufgabe erledigt', taskCard.querySelector('.font-medium').textContent);
+        }
+
+        function editTask(button) {
+            const messageEl = button.closest('.task-card').querySelector('.request-message');
+            const newMessage = prompt('Nachricht bearbeiten:', messageEl.textContent);
+            if (newMessage) {
+                messageEl.textContent = newMessage;
+                addToWorkLog('Aufgabe bearbeitet', 'Nachricht angepasst');
+            }
+        }
+
+        function editSection(sectionTitle) {
+            alert(`Abschnitt "${sectionTitle}" kann jetzt bearbeitet werden. Klicken Sie direkt in den Text.`);
+        }
+
+        function exportPDF() {
+            alert('PDF Export wird simuliert. In der Produktion würde hier ein PDF generiert.');
+            addToWorkLog('PDF Export', 'Bericht als PDF exportiert');
+        }
+
+        function regenerateReport() {
+            updateReport();
+            addToWorkLog('Bericht neu generiert', 'Bericht basierend auf aktuellen Dokumenten aktualisiert');
+            alert('Bericht wurde neu generiert.');
+        }
+
+        // Feedback
+        function showFeedbackModal() {
+            document.getElementById('feedback-modal').classList.remove('hidden');
+        }
+
+        function hideFeedbackModal() {
+            document.getElementById('feedback-modal').classList.add('hidden');
+            document.getElementById('feedbackText').value = '';
+        }
+
+        function submitFeedback(type) {
+            alert(`Feedback erhalten: ${type}. Vielen Dank!`);
+            hideFeedbackModal();
+        }
+
+        function submitFeedbackWithText() {
+            const text = document.getElementById('feedbackText').value;
+            alert(`Feedback erhalten: ${text || 'Keine weiteren Angaben'}. Vielen Dank!`);
+            hideFeedbackModal();
+        }
+
+        // Language toggle
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                alert('Demo: Sprache umschalten - Nur Deutsch verfügbar in dieser Prototyp-Version.');
+            });
+        });
+    </script>
+</body>
+</html>
