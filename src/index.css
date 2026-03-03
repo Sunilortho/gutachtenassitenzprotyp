@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --primary: #1a5f9c;
+  --primary-dark: #0e3b63;
+  --primary-light: #e8f0fe;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: linear-gradient(135deg, #f5f7fa 0%, #eef2f6 100%);
+  min-height: 100vh;
+}
