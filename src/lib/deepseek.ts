@@ -1,6 +1,6 @@
-// Deep Seek AI integration
-const DEEP_SEEK_API_KEY = import.meta.env.VITE_DEEP_SEEK_API_KEY || '';
-const DEEP_SEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
+// OpenRouter AI integration (supports Deep Seek and many other models)
+const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
+const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 export interface AnalysisResult {
   patientInfo: {
@@ -18,7 +18,7 @@ export async function analyzeDocument(
   documentText: string, 
   documentType: string
 ): Promise<AnalysisResult> {
-  if (!DEEP_SEEK_API_KEY) {
+  if (!OPENROUTER_API_KEY) {
     // Return mock data if no API key
     return getMockAnalysis(documentType);
   }
@@ -44,14 +44,16 @@ Antworte im folgenden JSON-Format:
 }`;
 
   try {
-    const response = await fetch(DEEP_SEEK_API_URL, {
+    const response = await fetch(OPENROUTER_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${DEEP_SEEK_API_KEY}`
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'HTTP-Referer': 'https://gutachtenassistent.vercel.app',
+        'X-Title': 'Gutachten Assistent'
       },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model: 'deepseek/deepseek-chat',
         messages: [
           { role: 'system', content: 'Du bist ein erfahrener medizinischer Gutachter. Antworte immer im geforderten JSON-Format.' },
           { role: 'user', content: prompt }
@@ -110,7 +112,7 @@ export async function generateReport(
   caseData: any,
   documents: any[]
 ): Promise<string> {
-  if (!DEEP_SEEK_API_KEY) {
+  if (!OPENROUTER_API_KEY) {
     return getMockReport(caseData);
   }
 
@@ -132,14 +134,16 @@ Erstelle ein professionelles Gutachten mit:
 Antworte auf Deutsch.`;
 
   try {
-    const response = await fetch(DEEP_SEEK_API_URL, {
+    const response = await fetch(OPENROUTER_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${DEEP_SEEK_API_KEY}`
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'HTTP-Referer': 'https://gutachtenassistent.vercel.app',
+        'X-Title': 'Gutachten Assistent'
       },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model: 'deepseek/deepseek-chat',
         messages: [
           { role: 'system', content: 'Du bist ein erfahrener medizinischer Gutachter. Erstelle professionelle medizinische Gutachten auf Deutsch.' },
           { role: 'user', content: prompt }

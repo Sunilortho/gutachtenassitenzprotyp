@@ -7,10 +7,10 @@
 npm install
 ```
 
-2. **Deep Seek API Key hinzufügen:**
+2. **OpenRouter API Key hinzufügen:**
 Erstelle eine `.env` Datei im Root-Verzeichnis:
 ```env
-VITE_DEEP_SEEK_API_KEY=your_deep_seek_api_key_here
+VITE_OPENROUTER_API_KEY=your_openrouter_api_key_here
 ```
 
 3. **Entwicklung starten:**
@@ -23,23 +23,37 @@ npm run dev
 npm run build
 ```
 
-## Deep Seek API Key erhalten
+## OpenRouter API Key erhalten
 
-1. Gehe zu https://platform.deepseek.com/
+1. Gehe zu https://openrouter.ai/
 2. Erstelle einen Account
 3. Generiere einen API Key
 4. Füge ihn in der .env Datei hinzu
+
+OpenRouter unterstützt viele Modelle:
+- **Deep Seek** (empfohlen - günstig und gut)
+- Anthropic Claude
+- OpenAI GPT
+- Und viele mehr!
 
 ## Funktionen
 
 ✅ **Benutzerauthentifizierung** - Login-System mit localStorage
 ✅ **Fallverwaltung** - CRUD-Operationen für Gutachten-Fälle
 ✅ **Dokumenten-Upload** - Drag & Drop Upload
-✅ **KI-Analyse** - Deep Seek AI analysiert medizinische Dokumente
+✅ **KI-Analyse** - OpenRouter AI analysiert medizinische Dokumente
 ✅ **Gutachten-Erstellung** - Automatische Berichterstellung
 ✅ **Notizen** - Fallnotizen hinzufügen
 ✅ **Export** - Gutachten als Markdown herunterladen
 ✅ **Datenpersistenz** - Alles wird in localStorage gespeichert
+
+## Vercel Deployment
+
+1. Importiere das Repo auf Vercel
+2. Füge Env Variable hinzu:
+   - Name: `VITE_OPENROUTER_API_KEY`
+   - Value: dein OpenRouter API Key
+3. Deploy!
 
 ## Demo
 
