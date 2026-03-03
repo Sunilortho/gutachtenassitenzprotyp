@@ -21,8 +21,8 @@ function App() {
     }
   }, []);
 
-  const handleLogin = (email: string) => {
-    const user = login(email, 'demo');
+  const handleLogin = (email: string, userData?: any) => {
+    const user = login(email, userData?.name || 'Demo User');
     setUser(user);
     setCurrentPage('dashboard');
   };

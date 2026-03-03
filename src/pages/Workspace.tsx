@@ -6,8 +6,9 @@ import {
 import { analyzeDocument, generateReport } from '../lib/deepseek';
 import { 
   ArrowLeft, Upload, FileText, Trash2, 
-  CheckCircle, AlertCircle, Download, Send,
-  Bot, RefreshCw, Loader2, X
+  CheckCircle, AlertCircle, Download, Send, Mail,
+  Bot, RefreshCw, Loader2, X, CheckSquare, Square,
+  AlertTriangle, MessageSquare, Copy, Printer
 } from 'lucide-react';
 
 interface WorkspaceProps {
@@ -39,16 +40,80 @@ const checklistItems = [
   { id: 'bildgebung', name: 'Bildgebung (MRT/CT)', required: false },
 ];
 
+// Issues that can be detected
+const issueTemplates = [
+  { id: 1, title: 'Unvollständige Dokumentation', description: 'Es fehlen erforderliche Unterlagen' },
+  { id: 2, title: 'Widersprüchliche Angaben', description: 'Angaben im Bericht widersprechen sich' },
+  { id: 3, title: 'Fehlende Unterschriften', description: 'Dokumente sind nicht unterschrieben' },
+  { id: 4, title: 'Veraltete Befunde', description: 'Befunde älter als 3 Monate' },
+  { id: 5, title: 'Fehlende Patientendaten', description: 'Patientenidentifikation unvollständig' },
+];
+
+// Email templates
+const emailTemplates = [
+  {
+    id: 1,
+    title: 'Anforderung weiterer Unterlagen',
+    subject: 'Anforderung weiterer Unterlagen für Gutachten',
+    body: `Sehr geehrte Damen und Herren,
+
+für die Erstellung des Gutachtens benötigen wir folgende weitere Unterlagen:
+
+- Aktuelle Medikationsliste
+- Verlaufsberichte der letzten 6 Monate
+- Bildgebende Diagnostik (MRT/CT)
+
+Wir bitten um Zusendung innerhalb von 2 Wochen.
+
+Mit freundlichen Grüßen`
+  },
+  {
+    id: 2,
+    title: 'Einladung zur Untersuchung',
+    subject: 'Einladung zur fachärztlichen Untersuchung',
+    body: `Sehr geehrte(r) Patient(in),
+
+wir laden Sie zu einer fachärztlichen Untersuchung ein.
+
+Termin: [Datum einfügen]
+Ort: [Praxisadresse]
+Mitbringen: Versicherungskarte,现有Berichte, Medikamentenliste
+
+Bitte bestätigen Sie den Termin.
+
+Mit freundlichen Grüßen`
+  },
+  {
+    id: 3,
+    title: 'Gutachten fertig',
+    subject: 'Gutachten fertiggestellt',
+    body: `Sehr geehrte Damen und Herren,
+
+das Gutachten wurde fertiggestellt und kann abgerufen werden.
+
+Fall-ID: [Case ID]
+Patient: [Patientenname]
+
+Das Gutachten ist im System hinterlegt.
+
+Mit freundlichen Grüßen`
+  }
+];
+
 export default function Workspace({ caseId, onBack }: WorkspaceProps) {
   const [caseData, setCaseData] = useState<Case | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [activeTab, setActiveTab] = useState<'documents' | 'analysis' | 'report'>('documents');
+  const [activeTab, setActiveTab] = useState<'documents' | 'analysis' | 'report' | 'issues' | 'emails'>('documents');
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [generatingReport, setGeneratingReport] = useState(false);
   const [report, setReport] = useState<string>('');
   const [note, setNote] = useState('');
   const [dragOver, setDragOver] = useState(false);
+  const [detectedIssues, setDetectedIssues] = useState<any[]>([]);
+  const [selectedIssues, setSelectedIssues] = useState<number[]>([]);
+  const [emailDraft, setEmailDraft] = useState({ subject: '', body: '' });
+  const [showEmailModal, setShowEmailModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -62,7 +127,6 @@ export default function Workspace({ caseId, onBack }: WorkspaceProps) {
       setCaseData(found);
       if (found.report) {
         setReport(found.report);
-        setActiveTab('report');
       }
     }
     
@@ -78,8 +142,17 @@ export default function Workspace({ caseId, onBack }: WorkspaceProps) {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       
-      // Simulate file reading
-      const text = await file.text();
+      // Read file content
+      let text = '';
+      if (file.type === 'text/plain') {
+        text = await file.text();
+      } else if (file.type === 'application/pdf') {
+        // For PDF, we'd need a PDF parser - using placeholder for now
+        text = `PDF Document: ${file.name}\n\n[PDF content would be extracted here - currently showing placeholder for PDF files]`;
+      } else {
+        text = await file.text();
+      }
+      
       const docType = classifyDocument(file.name);
       
       const newDoc: Document = {
@@ -88,7 +161,7 @@ export default function Workspace({ caseId, onBack }: WorkspaceProps) {
         name: file.name,
         type: docType,
         uploadedAt: new Date().toISOString(),
-        text: text.substring(0, 1000) // Store preview
+        text: text.substring(0, 2000)
       };
       
       saveDocument(newDoc);
@@ -97,7 +170,6 @@ export default function Workspace({ caseId, onBack }: WorkspaceProps) {
     setUploading(false);
     loadData();
     
-    // Update case status
     updateCase(caseId, { 
       status: 'documents',
       documents: documents.length + files.length 
@@ -123,13 +195,23 @@ export default function Workspace({ caseId, onBack }: WorkspaceProps) {
         const result = await analyzeDocument(doc.text || '', doc.type);
         doc.analysis = result;
         saveDocument(doc);
+        
+        // Detect issues
+        if (result.issues && result.issues.length > 0) {
+          const newIssues = result.issues.map((issue: string, idx: number) => ({
+            id: Date.now() + idx,
+            title: issue,
+            description: 'Automatisch erkannt durch KI',
+            severity: 'warning'
+          }));
+          setDetectedIssues(prev => [...prev, ...newIssues]);
+        }
       }
     }
     
     setAnalyzing(false);
     loadData();
     
-    // Update case status
     updateCase(caseId, { status: 'analysis' });
   };
 
@@ -143,7 +225,7 @@ export default function Workspace({ caseId, onBack }: WorkspaceProps) {
     
     updateCase(caseId, { 
       status: 'completed',
-      report: generatedReport 
+      report: generatedReport
     });
     
     setGeneratingReport(false);
@@ -166,6 +248,41 @@ export default function Workspace({ caseId, onBack }: WorkspaceProps) {
     
     const remaining = documents.filter(d => d.id !== docId);
     updateCase(caseId, { documents: remaining.length });
+  };
+
+  const toggleIssue = (issueId: number) => {
+    setSelectedIssues(prev => 
+      prev.includes(issueId) 
+        ? prev.filter(id => id !== issueId)
+        : [...prev, issueId]
+    );
+  };
+
+  const generateEmailFromIssues = () => {
+    if (selectedIssues.length === 0) return;
+    
+    const selected = detectedIssues.filter(i => selectedIssues.includes(i.id));
+    const body = selected.map(i => `- ${i.title}: ${i.description}`).join('\n');
+    
+    setEmailDraft({
+      subject: 'Anmerkungen zum Gutachtenfall',
+      body: `Sehr geehrte Damen und Herren,
+
+bei der Prüfung des Falles sind folgende Punkte aufgefallen:
+
+${body}
+
+Wir bitten um Stellungnahme.
+
+Mit freundlichen Grüßen`
+    });
+    
+    setShowEmailModal(true);
+    setActiveTab('emails');
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
   };
 
   const checklistStatus = checklistItems.map(item => {
@@ -205,16 +322,18 @@ export default function Workspace({ caseId, onBack }: WorkspaceProps) {
 
       {/* Tabs */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="flex border-b border-gray-200">
+        <div className="flex border-b border-gray-200 overflow-x-auto">
           {[
-            { id: 'documents', label: 'Dokumente', count: documents.length },
-            { id: 'analysis', label: 'KI-Analyse', count: documents.filter(d => d.analysis).length },
-            { id: 'report', label: 'Gutachten', count: report ? 1 : 0 }
+            { id: 'documents', label: '📄 Dokumente', count: documents.length },
+            { id: 'analysis', label: '🤖 KI-Analyse', count: documents.filter(d => d.analysis).length },
+            { id: 'issues', label: '⚠️ Probleme', count: detectedIssues.length },
+            { id: 'emails', label: '📧 E-Mail Vorlagen', count: emailTemplates.length },
+            { id: 'report', label: '📋 Gutachten', count: report ? 1 : 0 }
           ].map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-6 py-4 font-medium text-sm transition-colors relative ${
+              className={`px-4 py-3 font-medium text-sm whitespace-nowrap transition-colors relative ${
                 activeTab === tab.id 
                   ? 'text-[#1a5f9c] border-b-2 border-[#1a5f9c]' 
                   : 'text-gray-500 hover:text-gray-700'
@@ -235,7 +354,7 @@ export default function Workspace({ caseId, onBack }: WorkspaceProps) {
           <div className="p-6 space-y-6">
             {/* Upload Area */}
             <div 
-              className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
+              className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer ${
                 dragOver ? 'border-green-500 bg-green-50' : 'border-gray-300 hover:border-[#1a5f9c]'
               }`}
               onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -272,7 +391,10 @@ export default function Workspace({ caseId, onBack }: WorkspaceProps) {
 
             {/* Checklist */}
             <div className="bg-gray-50 rounded-xl p-5">
-              <h3 className="font-semibold text-gray-900 mb-4">Checkliste</h3>
+              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <CheckSquare size={18} />
+                Checkliste
+              </h3>
               <div className="space-y-2">
                 {checklistStatus.map(item => (
                   <div key={item.id} className="flex items-center gap-3">
@@ -324,13 +446,13 @@ export default function Workspace({ caseId, onBack }: WorkspaceProps) {
               </div>
             )}
 
-            {/* Analyze Button */}
+            {/* Action Buttons */}
             {documents.length > 0 && (
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3">
                 <button
                   onClick={handleAnalyze}
                   disabled={analyzing}
-                  className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-[#1a5f9c] to-[#0e3b63] text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50"
+                  className="flex items-center gap-2 bg-gradient-to-r from-[#1a5f9c] to-[#0e3b63] text-white px-5 py-3 rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50"
                 >
                   {analyzing ? (
                     <>
@@ -348,7 +470,7 @@ export default function Workspace({ caseId, onBack }: WorkspaceProps) {
                 <button
                   onClick={handleGenerateReport}
                   disabled={!allRequiredPresent || generatingReport || caseData.status === 'completed'}
-                  className="flex-1 flex items-center justify-center gap-2 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-all disabled:opacity-50"
+                  className="flex items-center gap-2 bg-green-600 text-white px-5 py-3 rounded-xl font-semibold hover:bg-green-700 transition-all disabled:opacity-50"
                 >
                   {generatingReport ? (
                     <>
@@ -432,12 +554,157 @@ export default function Workspace({ caseId, onBack }: WorkspaceProps) {
           </div>
         )}
 
+        {/* Issues Tab */}
+        {activeTab === 'issues' && (
+          <div className="p-6 space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-gray-900">Erkannte Probleme</h3>
+                <p className="text-sm text-gray-500">Automatisch erkannte Issues aus der KI-Analyse</p>
+              </div>
+              {selectedIssues.length > 0 && (
+                <button
+                  onClick={generateEmailFromIssues}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#1a5f9c] text-white rounded-lg font-medium hover:bg-[#0e3b63] transition-colors"
+                >
+                  <Mail size={16} />
+                  E-Mail generieren
+                </button>
+              )}
+            </div>
+
+            {detectedIssues.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">
+                <AlertTriangle size={48} className="mx-auto mb-4 opacity-30" />
+                <p>Noch keine Probleme erkannt</p>
+                <p className="text-sm">Starten Sie die KI-Analyse um Probleme zu erkennen</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {detectedIssues.map(issue => (
+                  <div 
+                    key={issue.id}
+                    className={`flex items-center gap-4 p-4 border rounded-xl cursor-pointer transition-colors ${
+                      selectedIssues.includes(issue.id) 
+                        ? 'border-[#1a5f9c] bg-blue-50' 
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => toggleIssue(issue.id)}
+                  >
+                    {selectedIssues.includes(issue.id) ? (
+                      <CheckCircle className="text-[#1a5f9c]" size={20} />
+                    ) : (
+                      <Square className="text-gray-400" size={20} />
+                    )}
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900">{issue.title}</p>
+                      <p className="text-sm text-gray-500">{issue.description}</p>
+                    </div>
+                    <AlertTriangle className="text-yellow-500" size={18} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Emails Tab */}
+        {activeTab === 'emails' && (
+          <div className="p-6 space-y-6">
+            <div>
+              <h3 className="font-semibold text-gray-900">E-Mail Vorlagen</h3>
+              <p className="text-sm text-gray-500">Vorlagen für häufige Kommunikation</p>
+            </div>
+
+            <div className="grid gap-4">
+              {emailTemplates.map(template => (
+                <div 
+                  key={template.id}
+                  className="border border-gray-200 rounded-xl p-5 hover:border-[#1a5f9c] transition-colors"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold text-gray-900">{template.title}</h4>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          setEmailDraft({ subject: template.subject, body: template.body });
+                          setShowEmailModal(true);
+                        }}
+                        className="p-2 text-gray-400 hover:text-[#1a5f9c] transition-colors"
+                        title="Bearbeiten"
+                      >
+                        <MessageSquare size={16} />
+                      </button>
+                      <button
+                        onClick={() => copyToClipboard(`Betreff: ${template.subject}\n\n${template.body}`)}
+                        className="p-2 text-gray-400 hover:text-[#1a5f9c] transition-colors"
+                        title="Kopieren"
+                      >
+                        <Copy size={16} />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                    <p className="font-medium mb-1">Betreff: {template.subject}</p>
+                    <p className="whitespace-pre-line">{template.body}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Current Draft */}
+            {emailDraft.body && (
+              <div className="border border-[#1a5f9c] rounded-xl p-5 bg-blue-50">
+                <h4 className="font-semibold text-gray-900 mb-3">Aktueller Entwurf</h4>
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    value={emailDraft.subject}
+                    onChange={(e) => setEmailDraft({ ...emailDraft, subject: e.target.value })}
+                    placeholder="Betreff"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg"
+                  />
+                  <textarea
+                    value={emailDraft.body}
+                    onChange={(e) => setEmailDraft({ ...emailDraft, body: e.target.value })}
+                    rows={8}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg font-mono text-sm"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => copyToClipboard(`Betreff: ${emailDraft.subject}\n\n${emailDraft.body}`)}
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                    >
+                      <Copy size={16} />
+                      Kopieren
+                    </button>
+                    <button
+                      onClick={() => window.open(`mailto:?subject=${encodeURIComponent(emailDraft.subject)}&body=${encodeURIComponent(emailDraft.body)}`)}
+                      className="flex items-center gap-2 px-4 py-2 bg-[#1a5f9c] text-white rounded-lg font-medium hover:bg-[#0e3b63] transition-colors"
+                    >
+                      <Mail size={16} />
+                      Per E-Mail senden
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Report Tab */}
         {activeTab === 'report' && (
           <div className="p-6">
             {report ? (
               <div className="space-y-4">
-                <div className="flex justify-end">
+                <div className="flex justify-end gap-2">
+                  <button
+                    onClick={() => window.print()}
+                    className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    <Printer size={16} />
+                    Drucken
+                  </button>
                   <button
                     onClick={() => {
                       const blob = new Blob([report], { type: 'text/markdown' });
@@ -472,7 +739,10 @@ export default function Workspace({ caseId, onBack }: WorkspaceProps) {
 
       {/* Notes Section */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h3 className="font-semibold text-gray-900 mb-4">Notizen</h3>
+        <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <MessageSquare size={18} />
+          Notizen
+        </h3>
         
         <div className="space-y-3 mb-4">
           {(caseData.notes || []).map((n, i) => (
