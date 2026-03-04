@@ -211,7 +211,10 @@ export default function Login({ onLogin }: LoginProps) {
           {mode === 'login' && (
             <div className="mt-4 p-4 bg-primary/10 rounded-xl border border-primary/20">
               <p className="text-center text-sm text-primary">
-                <strong>Demo-Modus:</strong> Geben Sie eine E-Mail ein
+                <strong>Demo-Modus:</strong> Geben Sie eine E-Mail ein, um fortzufahren
+              </p>
+              <p className="text-center text-xs text-slate-400 mt-2">
+                Daten werden lokal in Ihrem Browser gespeichert
               </p>
             </div>
           )}
