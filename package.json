@@ -1,6 +1,7 @@
 {
   "name": "gutachten-assistent",
   "version": "1.0.0",
+  "type": "module",
   "description": "Fully functional Gutachten Assistant with Deep Seek AI",
   "scripts": {
     "dev": "vite",
