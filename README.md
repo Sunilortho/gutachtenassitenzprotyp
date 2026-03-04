@@ -91,3 +91,4 @@ npm run build
 
 Ohne API Key funktioniert die App im **Demo-Modus** mit simulierten Daten.
  
+Wed Mar  4 01:48:47 AM CET 2026
