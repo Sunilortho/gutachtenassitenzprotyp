@@ -90,3 +90,4 @@ npm run build
 ## 📝 API-Free Modus
 
 Ohne API Key funktioniert die App im **Demo-Modus** mit simulierten Daten.
+ 
