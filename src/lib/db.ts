@@ -44,6 +44,21 @@ export interface Document {
 export function initializeDemoData() {
   const existingCases = localStorage.getItem(STORAGE_KEYS.CASES);
   
+  // Migrate old data if needed
+  if (existingCases) {
+    try {
+      const cases = JSON.parse(existingCases);
+      const migrated = cases.map((c: any) => ({
+        ...c,
+        tasks: Array.isArray(c.tasks) ? c.tasks : [],
+        notes: Array.isArray(c.notes) ? c.notes.map((n: any) => typeof n === 'string' ? { text: n, date: new Date().toISOString() } : n) : []
+      }));
+      localStorage.setItem(STORAGE_KEYS.CASES, JSON.stringify(migrated));
+    } catch (e) {
+      console.error('Migration failed', e);
+    }
+  }
+  
   if (!existingCases) {
     const demoCases: Case[] = [
       {
