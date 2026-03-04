@@ -182,7 +182,7 @@ export default function Workspace({ caseId, onBack }: WorkspaceProps) {
 
   // Ensure arrays are always arrays (defensive)
   const taskList = Array.isArray(tasks) ? tasks : [];
-  const caseNotes = Array.isArray(caseData?.notes) ? caseNotes : [];
+  const caseNotes = Array.isArray(caseData?.notes) ? caseData.notes : [];
 
   useEffect(() => {
     loadData();
