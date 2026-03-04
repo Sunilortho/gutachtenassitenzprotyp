@@ -25,8 +25,8 @@ export interface Case {
   created: string;
   lastActivity: string;
   documents: number;
-  tasks: number;
-  notes: string[];
+  tasks: any[];
+  notes: any[];
   report?: string;
 }
 
@@ -55,8 +55,8 @@ export function initializeDemoData() {
         created: '2024-01-10',
         lastActivity: '2024-01-15',
         documents: 3,
-        tasks: 2,
-        notes: ['Patient zeigt gute Besserung'],
+        tasks: [{ id: 1, title: 'Dokument prüfen', status: 'completed', priority: 'high', createdAt: '2024-01-10' }],
+        notes: [{ text: 'Patient zeigt gute Besserung', date: '2024-01-15' }],
         report: '# Gutachten\n\nPatient wurde untersucht...'
       },
       {
@@ -68,7 +68,7 @@ export function initializeDemoData() {
         created: '2024-01-12',
         lastActivity: '2024-01-14',
         documents: 2,
-        tasks: 5,
+        tasks: [],
         notes: []
       },
       {
@@ -80,7 +80,7 @@ export function initializeDemoData() {
         created: '2024-01-13',
         lastActivity: '2024-01-14',
         documents: 1,
-        tasks: 3,
+        tasks: [],
         notes: []
       }
     ];
