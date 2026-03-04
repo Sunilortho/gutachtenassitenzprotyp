@@ -163,6 +163,9 @@ export default function Workspace({ caseId, onBack }: WorkspaceProps) {
   const [caseData, setCaseData] = useState<Case | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [activeTab, setActiveTab] = useState<'documents' | 'analysis' | 'report' | 'issues' | 'emails' | 'tasks'>('documents');
+  
+  // Ensure documents is always an array (defensive)
+  const docs = Array.isArray(documents) ? documents : [];
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [generatingReport, setGeneratingReport] = useState(false);
@@ -176,6 +179,10 @@ export default function Workspace({ caseId, onBack }: WorkspaceProps) {
   const [tasks, setTasks] = useState<any[]>([]);
   const [newTask, setNewTask] = useState({ title: '', description: '', priority: 'medium' });
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Ensure arrays are always arrays (defensive)
+  const taskList = Array.isArray(tasks) ? tasks : [];
+  const caseNotes = Array.isArray(caseData?.notes) ? caseNotes : [];
 
   useEffect(() => {
     loadData();
@@ -237,7 +244,7 @@ export default function Workspace({ caseId, onBack }: WorkspaceProps) {
     
     updateCase(caseId, { 
       status: 'documents',
-      documents: documents.length + files.length 
+      documents: docs.length + files.length 
     });
   };
 
@@ -298,7 +305,7 @@ export default function Workspace({ caseId, onBack }: WorkspaceProps) {
 
   const handleAddNote = () => {
     if (!note.trim() || !caseData) return;
-    const notes = [...(caseData.notes || []), { text: note, date: new Date().toISOString() }];
+    const notes = [...(caseNotes || []), { text: note, date: new Date().toISOString() }];
     updateCase(caseId, { notes });
     setNote('');
     loadData();
@@ -307,7 +314,7 @@ export default function Workspace({ caseId, onBack }: WorkspaceProps) {
   const handleRemoveDocument = (docId: string) => {
     deleteDocument(docId);
     loadData();
-    const remaining = documents.filter(d => d.id !== docId);
+    const remaining = docs.filter(d => d.id !== docId);
     updateCase(caseId, { documents: remaining.length });
   };
 
@@ -371,7 +378,7 @@ Mit freundlichen Grüßen`
   };
 
   const toggleTaskStatus = (taskId: number) => {
-    const updatedTasks = tasks.map(t => 
+    const updatedTasks = taskList.map(t => 
       t.id === taskId ? { ...t, status: t.status === 'completed' ? 'pending' : 'completed' } : t
     );
     setTasks(updatedTasks);
@@ -379,7 +386,7 @@ Mit freundlichen Grüßen`
   };
 
   const deleteTask = (taskId: number) => {
-    const updatedTasks = tasks.filter(t => t.id !== taskId);
+    const updatedTasks = taskList.filter(t => t.id !== taskId);
     setTasks(updatedTasks);
     updateCase(caseId, { tasks: updatedTasks });
   };
@@ -423,14 +430,14 @@ Mit freundlichen Grüßen`
   };
 
   const checklistStatus = checklistItems.map(item => {
-    const hasDoc = documents.some(d => 
+    const hasDoc = docs.some(d => 
       d.type === item.name || d.name.toLowerCase().includes(item.name.toLowerCase())
     );
     return { ...item, present: hasDoc };
   });
 
   const allRequiredPresent = checklistStatus.filter(i => i.required).every(i => i.present);
-  const completedTasks = tasks.filter(t => t.status === 'completed').length;
+  const completedTasks = taskList.filter(t => t.status === 'completed').length;
 
   if (!caseData) return <div>Loading...</div>;
 
@@ -462,11 +469,11 @@ Mit freundlichen Grüßen`
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="flex border-b border-gray-200 overflow-x-auto">
           {[
-            { id: 'documents', label: '📄 Dokumente', count: documents.length },
-            { id: 'analysis', label: '🤖 KI-Analyse', count: documents.filter(d => d.analysis).length },
+            { id: 'documents', label: '📄 Dokumente', count: docs.length },
+            { id: 'analysis', label: '🤖 KI-Analyse', count: docs.filter(d => d.analysis).length },
             { id: 'issues', label: '⚠️ Probleme', count: detectedIssues.length },
             { id: 'emails', label: '📧 E-Mails', count: emailTemplates.length },
-            { id: 'tasks', label: '✓ Aufgaben', count: `${completedTasks}/${tasks.length}` },
+            { id: 'tasks', label: '✓ Aufgaben', count: `${completedTasks}/${taskList.length}` },
             { id: 'report', label: '📋 Gutachten', count: report ? 1 : 0 }
           ].map(tab => (
             <button
@@ -521,11 +528,11 @@ Mit freundlichen Grüßen`
             </div>
 
             {/* Document List */}
-            {documents.length > 0 && (
+            {docs.length > 0 && (
               <div>
-                <h3 className="font-semibold text-gray-900 mb-4">Hochgeladene Dokumente ({documents.length})</h3>
+                <h3 className="font-semibold text-gray-900 mb-4">Hochgeladene Dokumente ({docs.length})</h3>
                 <div className="space-y-2">
-                  {documents.map(doc => (
+                  {docs.map(doc => (
                     <div key={doc.id} className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:shadow-sm transition-shadow">
                       <FileText className="text-[#1a5f9c]" size={20} />
                       <div className="flex-1">
@@ -541,7 +548,7 @@ Mit freundlichen Grüßen`
             )}
 
             {/* Action Buttons */}
-            {documents.length > 0 && (
+            {docs.length > 0 && (
               <div className="flex flex-wrap gap-3">
                 <button onClick={handleAnalyze} disabled={analyzing} className="flex items-center gap-2 bg-gradient-to-r from-[#1a5f9c] to-[#0e3b63] text-white px-5 py-3 rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50">
                   {analyzing ? <><Loader2 className="animate-spin" size={18} /> Wird analysiert...</> : <><Bot size={18} /> KI-Analyse starten</>}
@@ -557,10 +564,10 @@ Mit freundlichen Grüßen`
         {/* Analysis Tab */}
         {activeTab === 'analysis' && (
           <div className="p-6 space-y-6">
-            {documents.filter(d => d.analysis).length === 0 ? (
+            {(!Array.isArray(documents) || docs.filter(d => d.analysis).length === 0) ? (
               <div className="text-center py-12 text-gray-400"><Bot size={48} className="mx-auto mb-4 opacity-30" /><p>Noch keine Analyse verfügbar</p><p className="text-sm">Laden Sie Dokumente hoch und starten Sie die Analyse</p></div>
             ) : (
-              documents.filter(d => d.analysis).map(doc => (
+              docs.filter(d => d.analysis).map(doc => (
                 <div key={doc.id} className="bg-gray-50 rounded-xl p-5">
                   <h3 className="font-semibold text-gray-900 mb-3">{doc.name}</h3>
                   {doc.analysis && (
@@ -665,11 +672,11 @@ Mit freundlichen Grüßen`
             </div>
 
             {/* Task List */}
-            {tasks.length === 0 ? (
+            {taskList.length === 0 ? (
               <div className="text-center py-12 text-gray-400"><Clipboard size={48} className="mx-auto mb-4 opacity-30" /><p>Keine Aufgaben vorhanden</p></div>
             ) : (
               <div className="space-y-2">
-                {tasks.map(task => (
+                {taskList.map(task => (
                   <div key={task.id} className={`flex items-center gap-4 p-4 border rounded-xl ${task.status === 'completed' ? 'bg-green-50 border-green-200' : 'border-gray-200'}`}>
                     <button onClick={() => toggleTaskStatus(task.id)} className={task.status === 'completed' ? 'text-green-500' : 'text-gray-400'}>{task.status === 'completed' ? <CheckCircle size={20} /> : <Square size={20} />}</button>
                     <div className="flex-1"><p className={`font-medium ${task.status === 'completed' ? 'text-gray-500 line-through' : 'text-gray-900'}`}>{task.title}</p><p className="text-sm text-gray-500">{task.description}</p></div>
@@ -704,7 +711,7 @@ Mit freundlichen Grüßen`
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2"><MessageSquare size={18} />Notizen</h3>
         <div className="space-y-3 mb-4">
-          {(caseData.notes || []).map((n: any, i: number) => (
+          {(caseNotes || []).map((n: any, i: number) => (
             <div key={i} className="p-3 bg-gray-50 rounded-lg"><p className="text-gray-700 text-sm">{typeof n === 'string' ? n : n.text}</p><p className="text-xs text-gray-400 mt-1">{n.date ? new Date(n.date).toLocaleString('de-DE') : ''}</p></div>
           ))}
         </div>
