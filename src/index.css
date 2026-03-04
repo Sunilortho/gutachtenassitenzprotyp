@@ -2,16 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  --primary: #1a5f9c;
-  --primary-dark: #0e3b63;
-  --primary-light: #e8f0fe;
+  --primary: #0ea5e9;
+  --primary-dark: #0284c7;
+  --accent: #06b6d4;
+  --dark: #0f172a;
+  --dark-50: #1e293b;
+  --dark-100: #334155;
 }
 
 body {
   font-family: 'Inter', system-ui, sans-serif;
-  background: linear-gradient(135deg, #f5f7fa 0%, #eef2f6 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   min-height: 100vh;
+  color: #f1f5f9;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Modern card styling */
+.card {
+  @apply bg-dark-50 border border-dark-100 rounded-2xl;
+}
+
+.card:hover {
+  @apply border-primary/30;
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(to right, #0ea5e9, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Gradient button */
+.btn-gradient {
+  background: linear-gradient(to right, #0ea5e9, #06b6d4);
+  @apply text-white font-semibold px-6 py-3 rounded-xl;
+  @apply hover:shadow-lg hover:shadow-primary/20 transition-all;
+}
+
+.btn-gradient:hover {
+  transform: translateY(-2px);
 }
