@@ -15,13 +15,21 @@
 
 body {
   font-family: 'Inter', system-ui, sans-serif;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+body.dark {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-  min-height: 100vh;
   color: #f1f5f9;
 }
 
-/* Animated background */
-body::before {
+body:not(.dark) {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+  color: #1e293b;
+}
+
+/* Animated background - dark mode only */
+body.dark::before {
   content: '';
   position: fixed;
   top: 0;
@@ -48,11 +56,14 @@ body::before {
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #1e293b;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background: #334155;
   border-radius: 4px;
+}
+body:not(.dark) ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #475569;
@@ -113,6 +124,11 @@ button:not(:disabled):hover {
   background: rgba(30, 41, 59, 0.7);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+body:not(.dark) .glass {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(226, 232, 240, 0.8);
 }
 
 /* Glow effects */

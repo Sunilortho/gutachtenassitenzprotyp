@@ -17,6 +17,7 @@ import {
 interface WorkspaceProps {
   caseId: string;
   onBack: () => void;
+  theme: 'dark' | 'light';
 }
 
 const statusColors: Record<string, string> = {
@@ -159,7 +160,8 @@ const taskTemplates = [
   { id: 5, title: 'Versicherung kontaktieren', description: 'Rückversicherung bei Versicherung', priority: 'medium' },
 ];
 
-export default function Workspace({ caseId, onBack }: WorkspaceProps) {
+export default function Workspace({ caseId, onBack, theme }: WorkspaceProps) {
+  const isDark = theme === 'dark';
   const [caseData, setCaseData] = useState<Case | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [activeTab, setActiveTab] = useState<'documents' | 'analysis' | 'report' | 'issues' | 'emails' | 'tasks'>('documents');
