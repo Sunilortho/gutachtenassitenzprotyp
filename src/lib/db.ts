@@ -184,7 +184,7 @@ export function getCurrentUser(): User | null {
   return data ? JSON.parse(data) : null;
 }
 
-export function login(email: string, password: string): User | null {
+export function login(email: string, name?: string): User | null {
   // Demo login - accept any credentials
   const users: User[] = JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS) || '[]');
   let user = users.find(u => u.email === email);
@@ -193,7 +193,7 @@ export function login(email: string, password: string): User | null {
     user = {
       id: `user-${Date.now()}`,
       email,
-      name: email.split('@')[0],
+      name: name || email.split('@')[0],
       role: 'doctor',
       createdAt: new Date().toISOString()
     };
