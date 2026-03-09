@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { getCases, saveCase, deleteCase, Case, generateId } from '../lib/db';
-import { 
-  FileText, Plus, Search, 
+import {
+  FileText, Plus, Search,
   Trash2, Eye,
-  Users, Activity, ClipboardCheck
+  Users, Activity, ClipboardCheck, Clock
 } from 'lucide-react';
 
 interface DashboardProps {

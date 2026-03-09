@@ -11,7 +11,7 @@ import {
   AlertTriangle, MessageSquare, Copy, Printer, Eye,
   Calendar, Clock, User, Building, Phone, MapPin,
   FilePlus, FileCheck, FileX, Activity, Pill, Stethoscope,
-  Clipboard, SendGrid, Settings, ChevronRight, Star, Archive
+  Clipboard, Settings, ChevronRight, Star, Archive
 } from 'lucide-react';
 
 interface WorkspaceProps {
