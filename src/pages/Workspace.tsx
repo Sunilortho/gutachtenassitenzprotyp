@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useGutachtenWorker } from '../hooks/useGutachten';
 import { 
   getCases, updateCase, getDocuments, saveDocument, deleteDocument, 
   Case, Document, generateId 
@@ -181,6 +182,9 @@ export default function Workspace({ caseId, onBack, theme }: WorkspaceProps) {
   const [tasks, setTasks] = useState<any[]>([]);
   const [newTask, setNewTask] = useState({ title: '', description: '', priority: 'medium' });
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Background worker hook
+  const { startGutachten, cancelGutachten, status: workerStatus, progress: workerProgress, results: workerResults, currentTaskDetails } = useGutachtenWorker();
 
   // Ensure arrays are always arrays (defensive)
   const taskList = Array.isArray(tasks) ? tasks : [];
@@ -566,7 +570,89 @@ Mit freundlichen Grüßen`
         {/* Analysis Tab */}
         {activeTab === 'analysis' && (
           <div className="p-6 space-y-6">
-            {(!Array.isArray(documents) || docs.filter(d => d.analysis).length === 0) ? (
+            {/* Background Worker Panel */}
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 space-y-3">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div>
+                <h3 className="font-semibold text-gray-900 flex items-center gap-2"><Bot size={18} className="text-[#1a5f9c]" /> Hintergrundanalyse (Worker)</h3>
+                <p className="text-sm text-gray-500">Verarbeitet alle Dokumente im Hintergrund mit automatischem Fallback</p>
+              </div>
+              <div className="flex gap-2">
+                {workerStatus === 'running' ? (
+                  <button
+                    onClick={() => currentTaskDetails?.taskId && cancelGutachten(currentTaskDetails.taskId)}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg font-medium hover:bg-red-200 transition-colors"
+                  >
+                    <X size={16} /> Abbrechen
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      const combined = docs.map(d => d.text || '').join('\n\n');
+                      startGutachten(combined, { fallbackChain: [{ model: 'gemini' }, { model: 'local-stub' }] });
+                    }}
+                    disabled={docs.length === 0}
+                    className="flex items-center gap-2 px-4 py-2 bg-[#1a5f9c] text-white rounded-lg font-medium hover:bg-[#0e3b63] transition-colors disabled:opacity-50"
+                  >
+                    <RefreshCw size={16} /> Analyse starten
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Progress bar */}
+            {(workerStatus === 'running' || workerStatus === 'done') && (
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span>
+                    {workerStatus === 'running' ? `Verarbeite… ${workerProgress}%` : 'Abgeschlossen'}
+                    {currentTaskDetails?.lastModel && ` · Modell: ${currentTaskDetails.lastModel}`}
+                  </span>
+                  <span>{workerProgress}%</span>
+                </div>
+                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-300 ${
+                      workerStatus === 'done' ? 'bg-green-500' : 'bg-[#1a5f9c]'
+                    }`}
+                    style={{ width: `${workerProgress}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {workerStatus === 'error' && (
+              <p className="text-sm text-red-600 flex items-center gap-2"><AlertCircle size={14} /> Fehler bei der Verarbeitung. Bitte erneut versuchen.</p>
+            )}
+            {workerStatus === 'cancelled' && (
+              <p className="text-sm text-yellow-600 flex items-center gap-2"><AlertTriangle size={14} /> Analyse wurde abgebrochen.</p>
+            )}
+
+            {/* Worker results summary */}
+            {workerStatus === 'done' && workerResults && (
+              <div className="bg-white rounded-lg p-4 border border-blue-100 space-y-2">
+                <h4 className="text-sm font-semibold text-gray-700">Ergebnisse ({workerResults.length} Abschnitte)</h4>
+                <div className="max-h-48 overflow-y-auto space-y-2">
+                  {workerResults.map((r: any, i: number) => (
+                    <div key={i} className="text-xs bg-gray-50 rounded p-2">
+                      <span className="font-medium text-gray-600">Abschnitt {r.chunkIndex + 1}</span>
+                      <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${
+                        r.model === 'local-stub' ? 'bg-yellow-100 text-yellow-700' :
+                        r.model === 'gemini' ? 'bg-purple-100 text-purple-700' :
+                        r.model === 'error' ? 'bg-red-100 text-red-700' :
+                        'bg-green-100 text-green-700'
+                      }`}>{r.model}</span>
+                      {r.result?.summary && (
+                        <p className="mt-1 text-gray-500 truncate">{r.result.summary}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {(!Array.isArray(documents) || docs.filter(d => d.analysis).length === 0) ? (
               <div className="text-center py-12 text-gray-400"><Bot size={48} className="mx-auto mb-4 opacity-30" /><p>Noch keine Analyse verfügbar</p><p className="text-sm">Laden Sie Dokumente hoch und starten Sie die Analyse</p></div>
             ) : (
               docs.filter(d => d.analysis).map(doc => (
