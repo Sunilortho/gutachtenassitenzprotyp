@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
-import { getCases, saveCase, deleteCase, Case, generateId } from '../lib/db';
+import { useState, useEffect, useRef } from 'react';
+import { getCases, saveCase, deleteCase, Case, generateId, exportSession, importSession, clearAllData } from '../lib/db';
 import {
   FileText, Plus, Search,
   Trash2, Eye,
-  Users, Activity, ClipboardCheck, Clock
+  Users, Activity, ClipboardCheck, Clock,
+  Download, Upload, AlertTriangle, X
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -32,6 +33,9 @@ export default function Dashboard({ onOpenCase, theme }: DashboardProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [showNewCaseModal, setShowNewCaseModal] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const importFileRef = useRef<HTMLInputElement>(null);
+  const [importStatus, setImportStatus] = useState<string | null>(null);
   const [newCase, setNewCase] = useState({
     patient: '',
     type: 'Schmerztherapie',
@@ -39,6 +43,31 @@ export default function Dashboard({ onOpenCase, theme }: DashboardProps) {
   });
 
   const isDark = theme === 'dark';
+
+  const handleExport = () => {
+    exportSession();
+  };
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const result = await importSession(file);
+      setImportStatus(`Importiert: ${result.cases} Fälle, ${result.documents} Dokumente`);
+      loadCases();
+      setTimeout(() => setImportStatus(null), 4000);
+    } catch (err) {
+      setImportStatus('Fehler beim Import — ungültiges Format');
+      setTimeout(() => setImportStatus(null), 4000);
+    }
+    e.target.value = '';
+  };
+
+  const handleClearData = () => {
+    clearAllData();
+    setShowClearConfirm(false);
+    loadCases();
+  };
 
   useEffect(() => {
     loadCases();
@@ -105,13 +134,42 @@ export default function Dashboard({ onOpenCase, theme }: DashboardProps) {
             Übersicht über alle Gutachten
           </p>
         </div>
-        <button
-          onClick={() => setShowNewCaseModal(true)}
-          className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-accent text-white px-6 py-3 rounded-xl font-semibold hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-0.5 transition-all"
-        >
-          <Plus size={18} />
-          Neuer Fall
-        </button>
+        <div className="flex gap-2 flex-wrap">
+          {/* GDPR / data management */}
+          <input ref={importFileRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
+          <button
+            onClick={handleExport}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all border ${
+              isDark ? 'border-dark-100 text-slate-300 hover:bg-dark-100' : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+            }`}
+            title="Sitzung als JSON sichern"
+          >
+            <Download size={16} /> Sichern
+          </button>
+          <button
+            onClick={() => importFileRef.current?.click()}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all border ${
+              isDark ? 'border-dark-100 text-slate-300 hover:bg-dark-100' : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+            }`}
+            title="Sitzung aus JSON laden"
+          >
+            <Upload size={16} /> Laden
+          </button>
+          <button
+            onClick={() => setShowClearConfirm(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all border border-red-200 text-red-600 hover:bg-red-50"
+            title="Alle Daten löschen (DSGVO)"
+          >
+            <Trash2 size={16} /> Daten löschen
+          </button>
+          <button
+            onClick={() => setShowNewCaseModal(true)}
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-accent text-white px-6 py-3 rounded-xl font-semibold hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-0.5 transition-all"
+          >
+            <Plus size={18} />
+            Neuer Fall
+          </button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -279,6 +337,53 @@ export default function Dashboard({ onOpenCase, theme }: DashboardProps) {
           </tbody>
         </table>
       </div>
+
+      {/* Import status toast */}
+      {importStatus && (
+        <div className={`fixed bottom-4 right-4 z-50 flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg ${
+          importStatus.startsWith('Fehler') ? 'bg-red-600 text-white' : 'bg-green-600 text-white'
+        }`}>
+          {importStatus.startsWith('Fehler') ? <AlertTriangle size={18} /> : <Download size={18} />}
+          {importStatus}
+          <button onClick={() => setImportStatus(null)}><X size={16} /></button>
+        </div>
+      )}
+
+      {/* GDPR / Data Delete Confirm Modal */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className={`rounded-2xl p-6 w-full max-w-sm ${
+            isDark ? 'bg-dark-50 border border-dark-100' : 'bg-white border border-slate-200'
+          }`}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-red-100 rounded-lg">
+                <AlertTriangle className="text-red-600" size={22} />
+              </div>
+              <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>Alle Daten löschen?</h2>
+            </div>
+            <p className={`text-sm mb-6 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+              Alle Fälle, Dokumente und Einstellungen werden unwiderruflich aus dem Browser gelöscht.
+              Diese Aktion kann nicht rückgängig gemacht werden.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all ${
+                  isDark ? 'border border-dark-100 text-slate-300 hover:bg-dark-100' : 'border border-slate-200 text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                Abbrechen
+              </button>
+              <button
+                onClick={handleClearData}
+                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700"
+              >
+                Endgültig löschen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* New Case Modal */}
       {showNewCaseModal && (

@@ -22,6 +22,13 @@ export default function Login({ onLogin, theme, toggleTheme }: LoginProps) {
 
   const isDark = theme === 'dark';
 
+  const handleDemoLogin = async () => {
+    setLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 400));
+    onLogin('demo@gutachten.de', { name: 'Dr. med. Demo' });
+    setLoading(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
@@ -322,13 +329,27 @@ export default function Login({ onLogin, theme, toggleTheme }: LoginProps) {
           </div>
 
           {mode === 'login' && (
-            <div className={`mt-4 p-4 rounded-xl border transition-colors duration-300 ${isDark ? 'bg-primary/10 border-primary/20' : 'bg-primary/5 border-primary/20'}`}>
-              <p className={`text-center text-sm ${isDark ? 'text-primary' : 'text-primary'}`}>
-                <strong>Demo-Modus:</strong> Geben Sie eine E-Mail ein, um fortzufahren
-              </p>
-              <p className={`text-center text-xs mt-2 ${isDark ? 'text-slate-400' : 'text-slate-400'}`}>
-                Daten werden lokal in Ihrem Browser gespeichert
-              </p>
+            <div className="space-y-3 mt-4">
+              {/* Demo starten button */}
+              <button
+                type="button"
+                onClick={handleDemoLogin}
+                disabled={loading}
+                className={`w-full py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all duration-300 border-2 disabled:opacity-50 ${
+                  isDark
+                    ? 'border-primary/40 text-primary hover:bg-primary/10'
+                    : 'border-primary/30 text-primary hover:bg-primary/5'
+                }`}
+              >
+                {loading ? 'Bitte warten...' : '▶ Demo starten — ohne Anmeldung'}
+              </button>
+              {/* GDPR notice */}
+              <div className={`p-3 rounded-xl border text-center ${
+                isDark ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-300' : 'bg-yellow-50 border-yellow-200 text-yellow-800'
+              }`}>
+                <p className="text-xs font-medium">⚠️ Demo-Modus: Bitte keine echten Patientendaten eingeben</p>
+                <p className="text-xs mt-1 opacity-75">Daten werden lokal im Browser gespeichert und sind nicht verschlüsselt</p>
+              </div>
             </div>
           )}
         </div>
