@@ -7,6 +7,21 @@ import { LogOut, User, Stethoscope, Menu, X, Sun, Moon } from 'lucide-react';
 
 type Page = 'dashboard' | 'workspace' | 'login';
 
+// Change 1: DEMO_TOKENS + isDemoExpired helper
+const DEMO_TOKENS: Record<string, string> = {
+  // token in URL  : last valid day (YYYY-MM-DD)
+  DRDIMICOLI_20260427: '2026-04-27', // 7-Tage-Zugang bis 27.04.2026
+};
+
+function isDemoExpired(token: string | null): boolean {
+  if (!token) return true;
+  const expiry = DEMO_TOKENS[token];
+  if (!expiry) return true;
+  const today = new Date();
+  const end = new Date(expiry + 'T23:59:59');
+  return today > end;
+}
+
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('login');
   const [currentCase, setCurrentCase] = useState<string | null>(null);
@@ -64,6 +79,31 @@ function App() {
   };
 
   const isDark = theme === 'dark';
+
+  // Change 2: demo token expiry check (inserted before the login guard)
+  const params = new URLSearchParams(window.location.search);
+  const demoToken = params.get('demo');
+  const demoExpired = isDemoExpired(demoToken);
+
+  if (demoExpired) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${
+        isDark ? 'bg-dark-50' : 'bg-slate-100'
+      }`}>
+        <div className={`max-w-md w-full mx-4 rounded-xl shadow-lg p-6 ${
+          isDark ? 'bg-dark border border-dark-100 text-slate-100' : 'bg-white border border-slate-200 text-slate-800'
+        }`}>
+          <h1 className="text-lg font-semibold mb-2">Demo‑Zugang abgelaufen</h1>
+          <p className="text-sm mb-3">
+            Dieser persönliche Testzugang war zeitlich begrenzt und ist nun abgelaufen.
+          </p>
+          <p className="text-sm">
+            Wenn Sie weiterhin Interesse haben, schalte ich Ihnen gerne einen neuen Zugang frei.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user || currentPage === 'login') {
     return <Login onLogin={handleLogin} theme={theme} toggleTheme={toggleTheme} />;
